@@ -1,0 +1,30 @@
+# Ambiente virtual
+venv/
+.venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Logs
+logs/
+
+# Arquivos grandes
+*.parquet
+*.db
+*.sqlite
+
+# Dados brutos
+dados_brutos/
+
+# Dados tratados
+dados_tratados/
+
+# Streamlit cache
+.streamlit/
+
+# Sistema
+.DS_Store

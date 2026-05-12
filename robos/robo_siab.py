@@ -1,93 +1,32 @@
 import pandas as pd
-from pysus.online_data.SIAB import download
-from pathlib import Path
+import os
 
-# ============================================
-# CONFIGURAÇÕES
-# ============================================
 
-UF = "DF"
-ANO = 2023
+def baixar_siab():
 
-PASTA_BRUTA = Path("dados_brutos")
-PASTA_TRATADA = Path("dados_tratados")
+    print("\nIniciando coleta SIAB...")
 
-PASTA_BRUTA.mkdir(exist_ok=True)
-PASTA_TRATADA.mkdir(exist_ok=True)
+    # Criar pasta se não existir
+    os.makedirs("dados_brutos", exist_ok=True)
 
-# ============================================
-# DOWNLOAD
-# ============================================
+    # EXEMPLO TEMPORÁRIO
+    dados = {
+        "Ano": [2020, 2021, 2022],
+        "Visitas": [12000, 15000, 18000],
+        "Gestantes": [320, 350, 410]
+    }
 
-print(f"Baixando dados SIAB {UF} {ANO}...")
+    df = pd.DataFrame(dados)
 
-try:
+    caminho = "dados_brutos/siab_exemplo.csv"
 
-    df = download(UF, ANO)
+    df.to_csv(
+        caminho,
+        index=False,
+        encoding="utf-8-sig"
+    )
 
-    print("Download concluído.")
+    print(f"Arquivo salvo em: {caminho}")
 
-except Exception as e:
-
-    print(f"Erro no download: {e}")
-
-    raise
-
-# ============================================
-# LIMPEZA
-# ============================================
-
-print("Tratando dados...")
-
-df.columns = [
-    col.strip()
-    for col in df.columns
-]
-
-# ============================================
-# SALVAR BRUTO
-# ============================================
-
-arquivo_bruto = (
-    PASTA_BRUTA /
-    f"siab_{UF}_{ANO}.csv"
-)
-
-df.to_csv(
-    arquivo_bruto,
-    index=False,
-    encoding="utf-8-sig"
-)
-
-print(f"Arquivo salvo: {arquivo_bruto}")
-
-# ============================================
-# EXEMPLO DE TRATAMENTO
-# ============================================
-
-df_tratado = df.copy()
-
-# remover colunas totalmente vazias
-df_tratado = df_tratado.dropna(
-    axis=1,
-    how='all'
-)
-
-# ============================================
-# SALVAR TRATADO
-# ============================================
-
-arquivo_tratado = (
-    PASTA_TRATADA /
-    f"siab_tratado_{UF}_{ANO}.csv"
-)
-
-df_tratado.to_csv(
-    arquivo_tratado,
-    index=False,
-    encoding="utf-8-sig"
-)
-
-print(f"Tratado salvo: {arquivo_tratado}")
-
-print("Processo finalizado.")
+    print("\nPrévia:")
+    print(df.head())

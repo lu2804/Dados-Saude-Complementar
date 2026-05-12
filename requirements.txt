@@ -1,6 +1,7 @@
 pandas
 numpy
 requests
+httpx
 plotly
 streamlit
 pysus

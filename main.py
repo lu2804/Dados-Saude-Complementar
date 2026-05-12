@@ -1,4 +1,14 @@
-#from robos.robo_siab import *
-import pysus
+from robos.robo_siab import baixar_siab
 
-print("Pysus instalado!")
+
+def main():
+
+    print("===================================")
+    print(" ROBÔ DE DADOS DE SAÚDE DO BRASIL ")
+    print("===================================")
+
+    baixar_siab()
+
+
+if __name__ == "__main__":
+    main()
