@@ -40,7 +40,7 @@ st.markdown("""
 <style>
 
 .main {
-    background-color: #F5F7FA;
+    background-color: #F5F5DC;
 }
 
 section[data-testid="stSidebar"] {
@@ -82,7 +82,8 @@ h1, h2, h3 {
 }
 
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True
+)
 
 # =====================================================
 # NOMES LEGÍVEIS DOS GRÁFICOS
