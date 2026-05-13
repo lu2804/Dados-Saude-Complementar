@@ -720,6 +720,14 @@ with tabs[4]:
     # =========================================
 
     col1, col2 = st.columns(2)
+
+    with col1:
+
+        cols_doencas = [
+            'Hiperten.Cadastr.',
+            'Hiperten.Acompan.',
+            'Diabetes_Cadastr.',
+            'Diabetes_Acompan.'
         ]
 
         cols_existentes = [
