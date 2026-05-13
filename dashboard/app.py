@@ -207,8 +207,7 @@ def carregar_dados():
 
         df['Total_Obitos_Inf'] = 0
 
-    # Mortalidade Infantil
-
+   # Mortalidade Infantil (Transformada para Porcentagem)
     if (
         'Total_Obitos_Inf' in df.columns
         and 'Nascidos_Vivos' in df.columns
@@ -222,10 +221,11 @@ def carregar_dados():
             .fillna(0)
         )
 
+        # Cálculo para % (porcentagem)
         df['Taxa_Mortalidade_Infantil'] = (
             df['Total_Obitos_Inf']
             / total_nv.replace(0, pd.NA)
-        ) * 1000
+        ) * 100
 
         df['Taxa_Mortalidade_Infantil'] = (
             df['Taxa_Mortalidade_Infantil']
@@ -234,7 +234,6 @@ def carregar_dados():
         )
 
     else:
-
         df['Taxa_Mortalidade_Infantil'] = 0
 
     # Cobertura Vacinal
@@ -628,16 +627,15 @@ with tabs[0]:
 
     with k2:
 
-        valor = (
-            df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
-            if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns
-            else 0
-        )
+        if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns and not df_filtrado.empty:
+            valor = df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
+        else:
+            valor = 0
 
         st.metric(
             "👶 Mortalidade Infantil",
-            f"{valor:.2f}",
-            delta=f"{calcular_delta('Taxa_Mortalidade_Infantil'):.2f}",
+            f"{valor:.2f}%",  # Adicionado o %
+            delta=f"{calcular_delta('Taxa_Mortalidade_Infantil'):.2f}%", # Adicionado o %
             delta_color="inverse"
         )
 
@@ -906,7 +904,7 @@ with tabs[0]:
     demonstra fortalecimento da Estratégia Saúde da Família,
     ampliando a prevenção, monitoramento epidemiológico e acesso à saúde.
     """)
-    
+
 # =====================================================
 # ABA 2 - ATENDIMENTO
 # =====================================================
