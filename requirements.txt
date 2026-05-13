@@ -1,9 +1,4 @@
-pandas
-numpy
-requests
-httpx
-plotly
 streamlit
-pysus
-pyarrow
+pandas
+plotly
 openpyxl
