@@ -606,80 +606,135 @@ with tabs[0]:
     vacinação e assistência básica ao longo dos anos.
     """)
 
-    # =================================================
-    # KPIs
-    # =================================================
+    # =====================================================
+# KPI 1 — VISITAS
+# =====================================================
 
-    k1, k2, k3, k4 = st.columns(4)
+with k1:
 
-    with k1:
+    valor = (
+        df_filtrado['Nº_Visitas'].sum()
+        if 'Nº_Visitas' in df_filtrado.columns
+        else 0
+    )
 
-        valor = (
-            df_filtrado['Nº_Visitas'].sum()
-            if 'Nº_Visitas' in df_filtrado.columns
-            else 0
-        )
+    st.metric(
+        "👨‍⚕️ Atendimento da Atenção Básica",
+        f"{valor:,.0f}".replace(",", "."),
+        delta=f"{int(calcular_delta('Nº_Visitas')):,}".replace(",", ".")
+    )
 
-        st.metric(
-            "👨‍⚕️ Total de Visitas",
-            f"{valor:,.0f}".replace(",", "."),
-            delta=int(calcular_delta('Nº_Visitas'))
-        )
+    st.caption("""
+    Refere-se ao total de visitas domiciliares realizadas
+    pelas equipes da Estratégia Saúde da Família.
 
-    with k2:
+    Inclui:
+    • acompanhamento familiar  
+    • visitas preventivas  
+    • monitoramento de doenças  
+    • assistência comunitária
+    """)
 
-        valor = (
-            df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
-            if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns
-            else 0
-        )
+# =====================================================
+# KPI 2 — MORTALIDADE INFANTIL
+# =====================================================
 
-        st.metric(
-            "👶 Mortalidade Infantil",
-            f"{valor:.2f}",
-            delta=f"{calcular_delta('Taxa_Mortalidade_Infantil'):.2f}",
-            delta_color="inverse"
-        )
+with k2:
 
-    with k3:
+    valor = (
+        df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
+        if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns
+        else 0
+    )
 
-        valor = (
-            df_filtrado['Perc_Vacina_Dia'].iloc[-1]
-            if 'Perc_Vacina_Dia' in df_filtrado.columns
-            else 0
-        )
+    st.metric(
+        "👶 Mortalidade Infantil",
+        f"{valor:.2f}",
+        delta=f"{calcular_delta('Taxa_Mortalidade_Infantil'):.2f}",
+        delta_color="inverse"
+    )
 
-        st.metric(
-            "💉 Cobertura Vacinal",
-            f"{valor:.2f}%",
-            delta=f"{calcular_delta('Perc_Vacina_Dia'):.2f}%"
-        )
+    st.caption("""
+    Taxa de óbitos em menores de 1 ano
+    para cada 1.000 nascidos vivos.
 
-    with k4:
+    Indicador utilizado para medir:
+    • qualidade da saúde pública  
+    • acesso ao pré-natal  
+    • saneamento básico  
+    • vacinação infantil
+    """)
 
-        if (
-            'NascVivos_<2500g' in df_filtrado.columns
-            and 'Nascidos_Vivos' in df_filtrado.columns
-        ):
+# =====================================================
+# KPI 3 — COBERTURA VACINAL
+# =====================================================
 
-            total_nv = df_filtrado['Nascidos_Vivos'].sum()
+with k3:
+
+    valor = (
+        df_filtrado['Perc_Vacina_Dia'].iloc[-1]
+        if 'Perc_Vacina_Dia' in df_filtrado.columns
+        else 0
+    )
+
+    st.metric(
+        "💉 Cobertura Vacinal",
+        f"{valor:.2f}%",
+        delta=f"{calcular_delta('Perc_Vacina_Dia'):.2f}%"
+    )
+
+    st.caption("""
+    Percentual de crianças menores de 1 ano
+    com vacinação em dia.
+
+    Relaciona:
+    • imunização infantil  
+    • prevenção de surtos  
+    • redução da mortalidade  
+    • controle epidemiológico
+    """)
+
+# =====================================================
+# KPI 4 — BAIXO PESO
+# =====================================================
+
+with k4:
+
+    if (
+        'NascVivos_<2500g' in df_filtrado.columns
+        and 'Nascidos_Vivos' in df_filtrado.columns
+    ):
+
+        total_nv = df_filtrado['Nascidos_Vivos'].sum()
+
+        if total_nv > 0:
 
             baixo_peso = (
-                (
-                    df_filtrado['NascVivos_<2500g'].sum()
-                    / total_nv
-                ) * 100
-            ) if total_nv > 0 else 0
+                df_filtrado['NascVivos_<2500g'].sum()
+                / total_nv
+            ) * 100
 
         else:
             baixo_peso = 0
 
-        st.metric(
-            "⚠️ Baixo Peso ao Nascer",
-            f"{baixo_peso:.2f}%"
-        )
+    else:
+        baixo_peso = 0
 
-    st.markdown("---")
+    st.metric(
+        "⚠️ Baixo Peso ao Nascer",
+        f"{baixo_peso:.2f}%"
+    )
+
+    st.caption("""
+    Percentual de recém-nascidos
+    com menos de 2.500g.
+
+    Associado a:
+    • prematuridade  
+    • desnutrição materna  
+    • pré-natal inadequado  
+    • maior risco de mortalidade infantil
+    """)
 
     # =================================================
     # CARDS EPIDEMIOLÓGICOS
@@ -1156,7 +1211,7 @@ with tabs[1]:
     # =================================================
 
     st.info("""
-    ### 📌 Conclusão da Aba
+    ### 📌 Conclusão
 
     Os indicadores demonstram a importância da atenção básica
     como principal mecanismo de prevenção, monitoramento e promoção da saúde.
@@ -2314,65 +2369,118 @@ with tabs[5]:
 
 with tabs[6]:
 
-    st.subheader("📊 Correlação Epidemiológica")
+    st.subheader("📊 Correlação Epidemiológica Inteligente")
 
     st.markdown("""
-    A correlação mede o grau de relação entre variáveis numéricas.
+    Esta análise identifica relações estatísticas entre indicadores
+    de saúde pública, permitindo compreender possíveis fatores
+    associados ao aumento ou redução de doenças, mortalidade
+    e cobertura assistencial.
 
-    - Valores próximos de +1 → relação positiva forte
-    - Valores próximos de -1 → relação negativa forte
-    - Valores próximos de 0 → pouca ou nenhuma relação
+    ### Interpretação da Correlação
+
+    • **+1.00** → relação positiva muito forte  
+    • **0.00** → pouca ou nenhuma relação  
+    • **-1.00** → relação negativa forte
     """)
+
+    # =================================================
+    # RENOMEAR VARIÁVEIS
+    # =================================================
+
+    mapa_nomes = {
+
+        'Nº_Visitas': 'Visitas Domiciliares',
+
+        'Taxa_Mortalidade_Infantil':
+        'Mortalidade Infantil',
+
+        'Perc_Vacina_Dia':
+        'Cobertura Vacinal',
+
+        'Hiperten.Cadastr.':
+        'Hipertensão',
+
+        'Diabetes_Cadastr.':
+        'Diabetes',
+
+        'Tubercul.Cadastr.':
+        'Tuberculose',
+
+        'Hansenia.Cadastr.':
+        'Hanseníase',
+
+        'Hosp.<5a_Pneumonia':
+        'Internações por Pneumonia',
+
+        'Hosp.<5a_Desitrat':
+        'Internações por Desidratação',
+
+        'Cr<1a_desnutridas':
+        'Desnutrição Infantil',
+
+        'NascVivos_<2500g':
+        'Baixo Peso ao Nascer'
+    }
 
     cols_corr = []
 
-    for col in [
-        'Nº_Visitas',
-        'Taxa_Mortalidade_Infantil',
-        'Perc_Vacina_Dia',
-        'Hiperten.Cadastr.',
-        'Diabetes_Cadastr.',
-        'Tubercul.Cadastr.',
-        'Hansenia.Cadastr.',
-        'Hosp.<5a_Pneumonia'
-    ]:
+    for col in mapa_nomes.keys():
 
         if col in df_filtrado.columns:
             cols_corr.append(col)
 
+    # =================================================
+    # MATRIZ DE CORRELAÇÃO
+    # =================================================
+
     if len(cols_corr) > 1:
 
-        corr = (
+        df_corr = (
             df_filtrado[cols_corr]
-            .corr(numeric_only=True)
-            .round(2)
+            .rename(columns=mapa_nomes)
         )
+
+        corr = df_corr.corr().round(2)
 
         fig = px.imshow(
             corr,
             text_auto=True,
-            color_continuous_scale='RdBu_r',
-            aspect='auto',
-            title='Mapa de Correlação Epidemiológica'
+            color_continuous_scale=[
+                [0.0, "#004A99"],
+                [0.5, "#F5F5F5"],
+                [1.0, "#C8102E"]
+            ],
+            aspect="auto",
+            title="Mapa de Correlação Epidemiológica"
         )
 
         fig.update_traces(
             hovertemplate=
-            "<b>Variável X:</b> %{x}<br>" +
-            "<b>Variável Y:</b> %{y}<br>" +
-            "<b>Correlação:</b> %{z}<extra></extra>"
+            "<b>%{x}</b> x <b>%{y}</b><br>" +
+            "Correlação: %{z}<extra></extra>"
         )
 
         fig.update_layout(
-            height=700,
-            title_font_size=24,
-            hovermode='closest',
-            plot_bgcolor='white',
-            paper_bgcolor='white',
+
+            height=750,
+
+            title_font=dict(
+                size=24,
+                color="#004A99"
+            ),
+
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+
             font=dict(
                 family="Arial",
-                size=14,
+                size=13,
                 color="#1F2937"
+            ),
+
+            coloraxis_colorbar=dict(
+                title="Correlação"
             )
         )
 
@@ -2381,18 +2489,68 @@ with tabs[6]:
             use_container_width=True
         )
 
-        st.info("""
-        ### 📌 Análise Automática
+    # =================================================
+    # INSIGHTS AUTOMÁTICOS
+    # =================================================
 
-        • Hipertensão e Diabetes possuem correlação extremamente alta.  
-        • A cobertura vacinal apresenta relação positiva com visitas domiciliares.  
-        • Tuberculose e Hanseníase possuem associação moderada com indicadores sociais.  
-        • Pneumonia infantil apresenta baixa correlação com doenças crônicas.
+    st.markdown("---")
+    st.subheader("🧠 Principais Insights Epidemiológicos")
+
+    insight1, insight2 = st.columns(2)
+
+    with insight1:
+
+        st.success("""
+        ### Correlações Positivas Identificadas
+
+        • A cobertura vacinal apresenta forte relação
+        com o aumento do acompanhamento em saúde.
+
+        • Hipertensão e diabetes demonstram
+        crescimento simultâneo ao longo dos anos,
+        refletindo o avanço das doenças crônicas.
+
+        • Internações respiratórias possuem associação
+        com vulnerabilidade social e baixa prevenção.
         """)
 
-    else:
+    with insight2:
 
-        st.warning("Não há colunas suficientes para calcular correlação.")
+        st.warning("""
+        ### Fatores Críticos Observados
+
+        • Mortalidade infantil possui relação com:
+            - baixo peso ao nascer
+            - desnutrição
+            - falhas no pré-natal
+
+        • Tuberculose e hanseníase apresentam
+        associação com desigualdade social
+        e deficiência sanitária.
+
+        • O aumento das visitas domiciliares
+        contribui para melhora dos indicadores.
+        """)
+
+    # =================================================
+    # ANÁLISE FINAL
+    # =================================================
+
+    st.info("""
+    ### 📌 Interpretação Geral
+
+    A análise correlacional permite identificar padrões epidemiológicos
+    relevantes entre doenças, assistência básica, vacinação e mortalidade.
+
+    Os dados sugerem que políticas públicas voltadas para:
+    
+    • ampliação da vacinação  
+    • fortalecimento da atenção básica  
+    • melhoria do saneamento  
+    • acompanhamento pré-natal  
+
+    possuem impacto direto na redução dos agravos em saúde pública.
+    """)
 
 # =====================================================
 # ABA 8 - DADOS
