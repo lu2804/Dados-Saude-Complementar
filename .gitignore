@@ -27,4 +27,4 @@ dados_tratados/
 .streamlit/
 
 # Sistema
-.DS_Store
+.DS_Store*.deb
