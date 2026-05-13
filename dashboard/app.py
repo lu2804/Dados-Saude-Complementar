@@ -1183,70 +1183,60 @@ with tabs[2]:
     """)
 
     # =================================================
-    # KPIs INFANTIS
+    # KPIs INFANTIS (CORRIGIDO)
     # =================================================
 
     k1, k2, k3, k4 = st.columns(4)
 
     with k1:
-
         criancas = (
             df_filtrado['Crianças_<1_ano'].sum()
             if 'Crianças_<1_ano' in df_filtrado.columns
             else 0
         )
-
         st.metric(
             "Crianças <1 ano",
             f"{criancas:,.0f}".replace(",", ".")
         )
 
     with k2:
-    # Verificamos se a coluna existe e se o dataframe não está vazio
         if 'Perc_Vacina_Dia' in df_filtrado.columns and not df_filtrado.empty:
-        # Pegamos o valor do último ano do período selecionado
             valor_vacinacao = df_filtrado['Perc_Vacina_Dia'].iloc[-1]
         else:
             valor_vacinacao = 0
 
-    st.metric(
-        label="💉 Vacinação em Dia",
-        value=f"{valor_vacinacao:.2f}%",
-        delta=f"{calcular_delta('Perc_Vacina_Dia'):.2f}%"
-    )
-        
+        # Agora este bloco está corretamente identado dentro do 'with k2'
+        st.metric(
+            label="💉 Vacinação em Dia",
+            value=f"{valor_vacinacao:.2f}%",
+            delta=f"{calcular_delta('Perc_Vacina_Dia'):.2f}%"
+        )       
 
     with k3:
-
         desnutridas = (
             df_filtrado['Cr<1a_desnutridas'].sum()
             if 'Cr<1a_desnutridas' in df_filtrado.columns
             else 0
         )
-
         st.metric(
             "Desnutrição infantil",
             f"{desnutridas:,.0f}".replace(",", "."),
+            delta=int(calcular_delta('Cr<1a_desnutridas')), # Adicionado delta para manter padrão
             delta_color="inverse"
         )
 
     with k4:
-
         if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns and not df_filtrado.empty:
-            valor = df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
+            valor_morte = df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
         else:
-            valor = 0
+            valor_morte = 0
 
+        # Removida a métrica duplicada que estava quebrando o layout
         st.metric(
             "👶 Mortalidade Infantil",
-            f"{valor:.2f}%",  # Adicionado o %
-            delta=f"{calcular_delta('Taxa_Mortalidade_Infantil'):.2f}%", # Adicionado o %
+            f"{valor_morte:.2f}%",
+            delta=f"{calcular_delta('Taxa_Mortalidade_Infantil'):.2f}%",
             delta_color="inverse"
-        )
-
-        st.metric(
-            "Mortalidade Infantil",
-            f"{mortalidade:.2f}"
         )
 
     st.markdown("---")
