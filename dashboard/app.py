@@ -402,7 +402,61 @@ with k4:
         "% Baixo Peso",
         f"{baixo_peso:.2f}%"
     )
+# =====================================================
+# INFORMAÇÕES EPIDEMIOLÓGICAS
+# =====================================================
 
+st.markdown("---")
+st.subheader("📌 Indicadores Epidemiológicos")
+
+card1, card2, card3 = st.columns(3)
+
+with card1:
+
+    taxa = (
+        df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
+        if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns
+        else 0
+    )
+
+    st.success(
+        f"""
+        ### Mortalidade Infantil
+
+        Taxa atual: {taxa:.2f} óbitos por mil nascidos vivos.
+
+        A mortalidade infantil é um dos principais indicadores de qualidade da saúde pública.
+        """
+    )
+
+with card2:
+
+    st.info(
+        """
+        ### Cobertura Vacinal
+
+        A vacinação reduz significativamente:
+
+        - mortalidade infantil
+        - doenças respiratórias
+        - surtos epidemiológicos
+        """
+    )
+
+with card3:
+
+    st.warning(
+        """
+        ### Fatores de Risco
+
+        Principais fatores associados:
+
+        - baixo peso ao nascer
+        - ausência de pré-natal
+        - desnutrição
+        - baixa vacinação
+        """
+    )
 # =====================================================
 # ABAS
 # =====================================================
@@ -615,73 +669,107 @@ with tabs[3]:
 # ABA 5 - DOENÇAS
 # =====================================================
 
+
 with tabs[4]:
 
     st.subheader("🦠 Doenças Monitoradas")
 
+    # =========================================
+    # CARDS INFORMATIVOS
+    # =========================================
+
+    info1, info2, info3 = st.columns(3)
+
+    with info1:
+        st.info(
+            """
+            ### Tuberculose
+            - Contágio: via respiratória
+            - Sintomas: tosse persistente, febre, perda de peso
+            - Risco: Alto
+            - Causa: bactéria *Mycobacterium tuberculosis*
+            """
+        )
+
+    with info2:
+        st.warning(
+            """
+            ### Hanseníase
+            - Contágio: contato prolongado
+            - Sintomas: manchas e perda de sensibilidade
+            - Risco: Médio
+            - Causa: bactéria *Mycobacterium leprae*
+            """
+        )
+
+    with info3:
+        st.error(
+            """
+            ### Diabetes e Hipertensão
+            - Não contagiosas
+            - Associadas ao estilo de vida
+            - Risco cardiovascular elevado
+            - Necessitam acompanhamento contínuo
+            """
+        )
+
+    st.markdown("---")
+
+    # =========================================
+    # GRÁFICOS
+    # =========================================
+
     col1, col2 = st.columns(2)
-
-    with col1:
-
-        cols_hip = [
-            'Hiperten.Cadastr.',
-            'Hiperten.Acompan.'
         ]
 
         cols_existentes = [
-            col for col in cols_hip
+            col for col in cols_doencas
             if col in df_filtrado.columns
         ]
 
         if len(cols_existentes) > 0:
 
-            try:
+            fig = px.line(
+                df_filtrado,
+                x='Ano',
+                y=cols_existentes,
+                markers=True,
+                title='Hipertensão e Diabetes'
+            )
 
-                fig = px.line(
-                    df_filtrado,
-                    x='Ano',
-                    y=cols_existentes,
-                    title="Hipertensão"
-                )
-
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
-
-            except Exception as e:
-                st.warning(f"Erro: {e}")
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
 
     with col2:
 
-        cols_dia = [
-            'Diabetes_Cadastr.',
-            'Diabetes_Acompan.'
+        cols_infecciosas = [
+            'Tubercul.Cadastr.',
+            'Tubercul_Acompan.',
+            'Hansenia.Cadastr.',
+            'Hansenia.Acompan.'
         ]
 
         cols_existentes = [
-            col for col in cols_dia
+            col for col in cols_infecciosas
             if col in df_filtrado.columns
         ]
 
         if len(cols_existentes) > 0:
 
-            try:
+            fig = px.bar(
+                df_filtrado,
+                x='Ano',
+                y=cols_existentes,
+                barmode='group',
+                title='Tuberculose e Hanseníase'
+            )
 
-                fig = px.line(
-                    df_filtrado,
-                    x='Ano',
-                    y=cols_existentes,
-                    title="Diabetes"
-                )
-
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
-
-            except Exception as e:
-                st.warning(f"Erro: {e}")
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
 
 # =====================================================
 # ABA 6 - INTERNAÇÕES
@@ -728,14 +816,29 @@ with tabs[5]:
 
 with tabs[6]:
 
-    st.subheader("📊 Correlação")
+    st.subheader("📊 Correlação entre Indicadores")
+
+    st.markdown(
+        """
+        A correlação mede o grau de relação entre variáveis.
+
+        - Próximo de +1 → relação positiva forte
+        - Próximo de -1 → relação negativa forte
+        - Próximo de 0 → pouca relação
+        """
+    )
 
     cols_corr = []
 
     for col in [
         'Nº_Visitas',
         'Taxa_Mortalidade_Infantil',
-        'Perc_Vacina_Dia'
+        'Perc_Vacina_Dia',
+        'Hiperten.Cadastr.',
+        'Diabetes_Cadastr.',
+        'Tubercul.Cadastr.',
+        'Hansenia.Cadastr.',
+        'Hosp.<5a_Pneumonia'
     ]:
 
         if col in df_filtrado.columns:
@@ -743,28 +846,28 @@ with tabs[6]:
 
     if len(cols_corr) > 1:
 
-        try:
+        corr = (
+            df_filtrado[cols_corr]
+            .corr()
+            .round(2)
+        )
 
-            corr = (
-                df_filtrado[cols_corr]
-                .corr()
-            )
+        fig = px.imshow(
+            corr,
+            text_auto=True,
+            color_continuous_scale='RdBu_r',
+            aspect='auto',
+            title='Mapa de Correlação'
+        )
 
-            fig = px.imshow(
-                corr,
-                text_auto=True,
-                color_continuous_scale='Blues',
-                title="Correlação entre Indicadores"
-            )
+        fig.update_layout(
+            height=700
+        )
 
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-        except Exception as e:
-            st.warning(f"Erro: {e}")
-
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 # =====================================================
 # ABA 8 - DADOS
 # =====================================================
