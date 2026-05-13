@@ -36,7 +36,6 @@ PALETA = {
 # =====================================================
 # CSS CUSTOMIZADO
 # =====================================================
-
 st.markdown("""
 <style>
     /* 1. Fundo Geral da Página */
@@ -69,19 +68,19 @@ st.markdown("""
     }
 
     /* 4. Estilização das Abas */
-    /* Abas NÃO selecionadas (Tom Creme/Bege) */
+    /* Abas NÃO selecionadas (Cinza Claro #e3e3e3) */
     .stTabs [data-baseweb="tab"] {
-        background-color: #FDF5E6 !important; /* Cor Creme/OldLace */
+        background-color: #e3e3e3 !important;
         border-radius: 10px 10px 0px 0px;
         padding: 12px 20px;
         margin-right: 4px;
-        border: 1px solid #e3e3e3; /* Borda sutil em tom trigo */
-        transition: all 0.3s ease;
+        border: 1px solid #d1d1d1;
+        transition: background-color 0.3s ease;
     }
 
-    /* Texto das abas NÃO selecionadas (Preto para contraste) */
+    /* Texto das abas NÃO selecionadas (Sempre Preto) */
     .stTabs [data-baseweb="tab"] p {
-        color: #333333 !important;
+        color: #1e1e1e !important;
         font-weight: 500;
     }
 
@@ -101,9 +100,9 @@ st.markdown("""
         color: #A6192E;
     }
     
-    /* 6. Ajuste de Hover (Passar o mouse) nas abas */
+    /* 6. Efeito ao passar o mouse nas abas não selecionadas */
     .stTabs [data-baseweb="tab"]:hover {
-        background-color: #F5DEB3 !important; /* Escurece o bege levemente no hover */
+        background-color: #d6d6d6 !important;
     }
 
 </style>
