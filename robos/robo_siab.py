@@ -1,15 +1,12 @@
 import pandas as pd
 import os
 
+PASTA_DADOS = "dados/dados_brutos"
 
 def baixar_siab():
 
     print("\nIniciando coleta SIAB...")
 
-    # Criar pasta se não existir
-    os.makedirs("dados_brutos", exist_ok=True)
-
-    # EXEMPLO TEMPORÁRIO
     dados = {
         "Ano": [2020, 2021, 2022],
         "Visitas": [12000, 15000, 18000],
@@ -18,7 +15,9 @@ def baixar_siab():
 
     df = pd.DataFrame(dados)
 
-    caminho = "dados_brutos/siab_exemplo.csv"
+    os.makedirs(PASTA_DADOS, exist_ok=True)
+
+    caminho = f"{PASTA_DADOS}/siab_exemplo.csv"
 
     df.to_csv(
         caminho,
@@ -27,6 +26,4 @@ def baixar_siab():
     )
 
     print(f"Arquivo salvo em: {caminho}")
-
-    print("\nPrévia:")
     print(df.head())

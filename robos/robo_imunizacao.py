@@ -1,7 +1,11 @@
 import pandas as pd
 import os
 
+PASTA_DADOS = "dados/dados_brutos"
+
 def baixar_imunizacao():
+
+    print("\nIniciando coleta de imunização...")
 
     dados = {
         "Ano": [2020, 2021, 2022],
@@ -11,11 +15,15 @@ def baixar_imunizacao():
 
     df = pd.DataFrame(dados)
 
-    os.makedirs("dados_brutos", exist_ok=True)
+    os.makedirs(PASTA_DADOS, exist_ok=True)
 
-    caminho = "dados_brutos/imunizacao.csv"
+    caminho = f"{PASTA_DADOS}/imunizacao.csv"
 
-    df.to_csv(caminho, index=False)
+    df.to_csv(
+        caminho,
+        index=False,
+        encoding="utf-8-sig"
+    )
 
-    print("\nDados de imunização salvos com sucesso!")
+    print(f"Arquivo salvo em: {caminho}")
     print(df.head())

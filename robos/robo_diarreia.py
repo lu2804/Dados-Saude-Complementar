@@ -1,7 +1,11 @@
 import pandas as pd
 import os
 
+PASTA_DADOS = "dados/dados_brutos"
+
 def baixar_diarreia():
+
+    print("\nIniciando coleta de diarreia...")
 
     dados = {
         "Ano": [2020, 2021, 2022],
@@ -11,11 +15,15 @@ def baixar_diarreia():
 
     df = pd.DataFrame(dados)
 
-    os.makedirs("dados_brutos", exist_ok=True)
+    os.makedirs(PASTA_DADOS, exist_ok=True)
 
-    caminho = "dados_brutos/diarreia.csv"
+    caminho = f"{PASTA_DADOS}/diarreia.csv"
 
-    df.to_csv(caminho, index=False)
+    df.to_csv(
+        caminho,
+        index=False,
+        encoding="utf-8-sig"
+    )
 
-    print("\nDados de diarreia salvos com sucesso!")
+    print(f"Arquivo salvo em: {caminho}")
     print(df.head())

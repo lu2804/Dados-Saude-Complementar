@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import os
 
 # =====================================================
@@ -14,70 +15,250 @@ st.set_page_config(
 )
 
 # =====================================================
-# ESTILO
+# CSS CUSTOMIZADO
 # =====================================================
 
 st.markdown("""
 <style>
 
-[data-testid="stMetricValue"]{
-    font-size:32px;
-    color:#1565C0;
-    font-weight:bold;
+.main {
+    background-color: #F5F7FA;
 }
 
-.main{
-    background-color:#F5F7FA;
+[data-testid="stMetricValue"] {
+    font-size: 32px;
+    color: #004A99;
+    font-weight: bold;
+}
+
+[data-testid="stMetricLabel"] {
+    font-size: 15px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    padding: 10px 20px;
+    background-color: white;
+    border-radius: 8px 8px 0 0;
+    margin-right: 4px;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #DCEEFF !important;
+    border-bottom: 3px solid #004A99 !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# FUNÇÃO DE CARGA
+# CARREGAMENTO DOS DADOS
 # =====================================================
 
 @st.cache_data
 def carregar_dados():
 
-    arquivo = "dados/dados_tratados/saude_familia_anual_formatado.csv"
+    nome_arquivo = "saude_familia_anual_formatado.csv"
 
-    if not os.path.exists(arquivo):
-        st.error(f"Arquivo não encontrado: {arquivo}")
-        return pd.DataFrame()
+    caminhos = [
+        nome_arquivo,
+        os.path.join("dashboard", nome_arquivo),
+        os.path.join("dados", nome_arquivo),
+        os.path.join("..", nome_arquivo),
+    ]
 
-    df = pd.read_csv(arquivo, encoding="utf-8-sig")
+    df = pd.DataFrame()
+
+    for caminho in caminhos:
+
+        if os.path.exists(caminho):
+
+            try:
+
+                df = pd.read_csv(
+                    caminho,
+                    encoding="utf-8-sig",
+                    sep=","
+                )
+
+                st.success(f"Arquivo carregado: {caminho}")
+
+                break
+
+            except Exception as e:
+
+                st.error(f"Erro ao ler CSV: {e}")
+
+    if df.empty:
+        st.error(f"Arquivo '{nome_arquivo}' não encontrado.")
+        st.stop()
+
+    # =================================================
+    # LIMPEZA
+    # =================================================
 
     df.columns = [col.strip() for col in df.columns]
 
-    if "Ano" in df.columns:
-        df["Ano"] = df["Ano"].astype(int)
+    # =================================================
+    # CONVERSÃO DO ANO
+    # =================================================
 
-    return df.sort_values("Ano")
+    if 'Ano' in df.columns:
+
+        df['Ano'] = pd.to_numeric(
+            df['Ano'],
+            errors='coerce'
+        )
+
+        df = df.dropna(subset=['Ano'])
+
+        df['Ano'] = df['Ano'].astype(int)
+
+    else:
+
+        st.error("Coluna 'Ano' não encontrada.")
+        st.stop()
+
+    # =================================================
+    # CÁLCULOS EPIDEMIOLÓGICOS
+    # =================================================
+
+    cols_obitos = [
+        'Óbitos<1a_Diarr',
+        'Óbitos<1a_IRA',
+        'Óbitos<1a_OutCau'
+    ]
+
+    cols_existentes = [
+        col for col in cols_obitos
+        if col in df.columns
+    ]
+
+    if len(cols_existentes) > 0:
+
+        df['Total_Obitos_Inf'] = (
+            df[cols_existentes]
+            .sum(axis=1)
+        )
+
+    else:
+
+        df['Total_Obitos_Inf'] = 0
+
+    # Mortalidade Infantil
+
+    if (
+        'Total_Obitos_Inf' in df.columns
+        and 'Nascidos_Vivos' in df.columns
+    ):
+
+        total_nv = (
+            pd.to_numeric(
+                df['Nascidos_Vivos'],
+                errors='coerce'
+            )
+            .fillna(0)
+        )
+
+        df['Taxa_Mortalidade_Infantil'] = (
+            df['Total_Obitos_Inf']
+            / total_nv.replace(0, pd.NA)
+        ) * 1000
+
+        df['Taxa_Mortalidade_Infantil'] = (
+            df['Taxa_Mortalidade_Infantil']
+            .fillna(0)
+            .round(2)
+        )
+
+    else:
+
+        df['Taxa_Mortalidade_Infantil'] = 0
+
+    # Cobertura Vacinal
+
+    if (
+        'Cr<1a_c/Vacin.dia' in df.columns
+        and 'Crianças_<1_ano' in df.columns
+    ):
+
+        total_criancas = (
+            pd.to_numeric(
+                df['Crianças_<1_ano'],
+                errors='coerce'
+            )
+            .fillna(0)
+        )
+
+        df['Perc_Vacina_Dia'] = (
+            df['Cr<1a_c/Vacin.dia']
+            / total_criancas.replace(0, pd.NA)
+        ) * 100
+
+        df['Perc_Vacina_Dia'] = (
+            df['Perc_Vacina_Dia']
+            .fillna(0)
+            .round(2)
+        )
+
+    else:
+
+        df['Perc_Vacina_Dia'] = 0
+
+    return df.sort_values('Ano')
 
 # =====================================================
-# CARREGAR DADOS
+# DICIONÁRIO
+# =====================================================
+
+def gerar_dicionario():
+
+    dados = {
+        "Coluna": [
+            "Ano",
+            "Nascidos_Vivos",
+            "Taxa_Mortalidade_Infantil",
+            "Nº_Visitas",
+            "Hiperten.Cadastr.",
+            "Diabetes_Cadastr.",
+            "Tubercul.Cadastr.",
+            "Hansenia.Cadastr.",
+            "Hosp.Abuso_Álcool"
+        ],
+
+        "Descrição": [
+            "Ano de referência",
+            "Quantidade de nascidos vivos",
+            "Óbitos menores de 1 ano por 1000 nascidos vivos",
+            "Visitas domiciliares",
+            "Hipertensos cadastrados",
+            "Diabéticos cadastrados",
+            "Casos de Tuberculose",
+            "Casos de Hanseníase",
+            "Internações por abuso de álcool"
+        ]
+    }
+
+    return pd.DataFrame(dados)
+
+# =====================================================
+# CARREGAR DATAFRAME
 # =====================================================
 
 df = carregar_dados()
 
 if df.empty:
+    st.error("O CSV foi carregado vazio.")
     st.stop()
 
-# =====================================================
-# TÍTULO
-# =====================================================
-
-st.title("🏥 BI - Saúde da Família")
-st.markdown("---")
+df_dic = gerar_dicionario()
 
 # =====================================================
 # SIDEBAR
 # =====================================================
 
-st.sidebar.header("🔎 Filtros")
+st.sidebar.title("📊 BI Analytics")
 
-anos = sorted(df["Ano"].unique())
+anos = sorted(df['Ano'].unique())
 
 ano_inicio, ano_fim = st.sidebar.select_slider(
     "Período",
@@ -86,334 +267,203 @@ ano_inicio, ano_fim = st.sidebar.select_slider(
 )
 
 df_filtrado = df[
-    (df["Ano"] >= ano_inicio) &
-    (df["Ano"] <= ano_fim)
+    (df['Ano'] >= ano_inicio)
+    & (df['Ano'] <= ano_fim)
 ]
 
 # =====================================================
-# FILTRO DE MUNICÍPIO
+# FUNÇÃO DELTA
 # =====================================================
 
-if "Municipio" in df.columns:
+def calcular_delta(coluna):
 
-    municipios = sorted(df["Municipio"].dropna().unique())
+    if coluna not in df_filtrado.columns:
+        return 0
 
-    municipio = st.sidebar.selectbox(
-        "Município",
-        ["Todos"] + municipios
+    if len(df_filtrado) < 2:
+        return 0
+
+    valores = (
+        df_filtrado
+        .sort_values('Ano')[coluna]
+        .tolist()
     )
 
-    if municipio != "Todos":
-        df_filtrado = df_filtrado[
-            df_filtrado["Municipio"] == municipio
-        ]
+    return valores[-1] - valores[-2]
 
 # =====================================================
-# FUNÇÃO FORMATAÇÃO
+# TÍTULO
 # =====================================================
 
-def formatar(valor):
+st.title("🏥 Sistema de Monitoramento Estratégico da Saúde")
 
-    return (
-        f"{valor:,.0f}"
-        .replace(",", "X")
-        .replace(".", ",")
-        .replace("X", ".")
-    )
+st.info(
+    "Indicadores epidemiológicos baseados em dados anuais da Estratégia Saúde da Família."
+)
 
 # =====================================================
 # KPIs
 # =====================================================
 
-col1, col2, col3, col4 = st.columns(4)
+k1, k2, k3, k4 = st.columns(4)
 
-with col1:
+# =====================================================
+# KPI 1
+# =====================================================
 
-    total_visitas = (
-        df_filtrado["Nº_Visitas"].sum()
-        if "Nº_Visitas" in df_filtrado.columns
+with k1:
+
+    valor = (
+        df_filtrado['Nº_Visitas'].sum()
+        if 'Nº_Visitas' in df_filtrado.columns
         else 0
     )
 
     st.metric(
         "Total de Visitas",
-        formatar(total_visitas)
+        f"{valor:,.0f}".replace(",", "."),
+        delta=int(calcular_delta('Nº_Visitas'))
     )
 
-with col2:
+# =====================================================
+# KPI 2
+# =====================================================
 
-    nascidos = (
-        df_filtrado["Nascidos_Vivos"].sum()
-        if "Nascidos_Vivos" in df_filtrado.columns
-        else 0
-    )
+with k2:
+
+    if (
+        'Taxa_Mortalidade_Infantil' in df_filtrado.columns
+        and not df_filtrado.empty
+    ):
+        valor = (
+            df_filtrado['Taxa_Mortalidade_Infantil']
+            .iloc[-1]
+        )
+    else:
+        valor = 0
 
     st.metric(
-        "Nascidos Vivos",
-        formatar(nascidos)
+        "Taxa Mortalidade Infantil",
+        valor,
+        delta=f"{calcular_delta('Taxa_Mortalidade_Infantil'):.2f}",
+        delta_color="inverse"
     )
 
-with col3:
+# =====================================================
+# KPI 3
+# =====================================================
 
-    gestantes = (
-        df_filtrado["Nº_Gestantes"].sum()
-        if "Nº_Gestantes" in df_filtrado.columns
-        else 0
-    )
+with k3:
+
+    if (
+        'Perc_Vacina_Dia' in df_filtrado.columns
+        and not df_filtrado.empty
+    ):
+        valor = (
+            df_filtrado['Perc_Vacina_Dia']
+            .iloc[-1]
+        )
+    else:
+        valor = 0
 
     st.metric(
-        "Gestantes",
-        formatar(gestantes)
+        "% Cobertura Vacinal",
+        f"{valor:.2f}%",
+        delta=f"{calcular_delta('Perc_Vacina_Dia'):.2f}%"
     )
 
-with col4:
+# =====================================================
+# KPI 4
+# =====================================================
 
-    obitos = (
-        df_filtrado["Óbitos_<1"].sum()
-        if "Óbitos_<1" in df_filtrado.columns
-        else 0
-    )
+with k4:
+
+    if (
+        'NascVivos_<2500g' in df_filtrado.columns
+        and 'Nascidos_Vivos' in df_filtrado.columns
+    ):
+
+        total_nv = df_filtrado['Nascidos_Vivos'].sum()
+
+        if total_nv > 0:
+
+            baixo_peso = (
+                df_filtrado['NascVivos_<2500g'].sum()
+                / total_nv
+            ) * 100
+
+        else:
+            baixo_peso = 0
+
+    else:
+        baixo_peso = 0
 
     st.metric(
-        "Óbitos <1 ano",
-        formatar(obitos)
+        "% Baixo Peso",
+        f"{baixo_peso:.2f}%"
     )
 
 # =====================================================
 # ABAS
 # =====================================================
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
-
+tabs = st.tabs([
     "🏠 Visão Geral",
     "📈 Atendimento",
     "👶 Saúde Infantil",
     "🤰 Saúde Materna",
     "🦠 Doenças",
     "🏥 Internações",
-    "📊 Correlações",
+    "📊 Correlação",
     "📂 Dados"
-
 ])
 
 # =====================================================
-# ABA 1 - VISÃO GERAL
+# ABA 1
 # =====================================================
 
-with tab1:
+with tabs[0]:
 
-    st.subheader("Visão Geral da Saúde")
+    col1, col2 = st.columns([2, 1])
 
-    if "Nº_Visitas" in df_filtrado.columns:
+    with col1:
 
-        fig = px.line(
-            df_filtrado,
-            x="Ano",
-            y="Nº_Visitas",
-            markers=True,
-            title="Evolução das Visitas"
+        fig = go.Figure()
+
+        if 'Nascidos_Vivos' in df_filtrado.columns:
+
+            fig.add_trace(
+                go.Bar(
+                    x=df_filtrado['Ano'],
+                    y=df_filtrado['Nascidos_Vivos'],
+                    name='Nascidos Vivos'
+                )
+            )
+
+        if 'Total_Obitos_Inf' in df_filtrado.columns:
+
+            fig.add_trace(
+                go.Scatter(
+                    x=df_filtrado['Ano'],
+                    y=df_filtrado['Total_Obitos_Inf'],
+                    mode='lines+markers',
+                    name='Óbitos <1 ano'
+                )
+            )
+
+        fig.update_layout(
+            title="Nascimentos x Óbitos Infantis"
         )
 
-        st.plotly_chart(fig, use_container_width=True)
-
-# =====================================================
-# ABA 2 - ATENDIMENTO
-# =====================================================
-
-with tab2:
-
-    st.subheader("Atendimentos")
-
-    colunas = []
-
-    if "Nº_Visitas" in df_filtrado.columns:
-        colunas.append("Nº_Visitas")
-
-    if "Famílias_Acompanh." in df_filtrado.columns:
-        colunas.append("Famílias_Acompanh.")
-
-    if len(colunas) > 0:
-
-        fig = px.line(
-            df_filtrado,
-            x="Ano",
-            y=colunas,
-            markers=True
+        st.plotly_chart(
+            fig,
+            use_container_width=True
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+    with col2:
 
-# =====================================================
-# ABA 3 - SAÚDE INFANTIL
-# =====================================================
+        st.subheader("📝 Informações")
 
-with tab3:
-
-    st.subheader("Mortalidade Infantil")
-
-    cols_obitos = [
-        "Óbitos<1a_Diarr",
-        "Óbitos<1a_IRA",
-        "Óbitos<1a_OutCau"
-    ]
-
-    existentes = [
-        c for c in cols_obitos
-        if c in df_filtrado.columns
-    ]
-
-    if len(existentes) > 0:
-
-        dados = (
-            df_filtrado[existentes]
-            .sum()
-            .reset_index()
+        st.success(
+            f"Análise epidemiológica entre {ano_inicio} e {ano_fim}."
         )
-
-        dados.columns = ["Causa", "Total"]
-
-        fig = px.pie(
-            dados,
-            values="Total",
-            names="Causa",
-            hole=0.4
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-    # Pneumonia infantil
-
-    if "Hosp.<5a_Pneumonia" in df_filtrado.columns:
-
-        fig2 = px.bar(
-            df_filtrado,
-            x="Ano",
-            y="Hosp.<5a_Pneumonia",
-            title="Internações por Pneumonia"
-        )
-
-        st.plotly_chart(fig2, use_container_width=True)
-
-# =====================================================
-# ABA 4 - SAÚDE MATERNA
-# =====================================================
-
-with tab4:
-
-    st.subheader("Gestantes e Pré-Natal")
-
-    if "Nº_Gestantes" in df_filtrado.columns:
-
-        fig = px.line(
-            df_filtrado,
-            x="Ano",
-            y="Nº_Gestantes",
-            markers=True
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-# =====================================================
-# ABA 5 - DOENÇAS
-# =====================================================
-
-with tab5:
-
-    st.subheader("Doenças Monitoradas")
-
-    doencas = []
-
-    for col in [
-        "Diabéticos",
-        "Hipertensos",
-        "Hanseníase",
-        "Tuberculose"
-    ]:
-        if col in df_filtrado.columns:
-            doencas.append(col)
-
-    if len(doencas) > 0:
-
-        fig = px.line(
-            df_filtrado,
-            x="Ano",
-            y=doencas,
-            markers=True
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-# =====================================================
-# ABA 6 - INTERNAÇÕES
-# =====================================================
-
-with tab6:
-
-    st.subheader("Internações")
-
-    internacoes = []
-
-    for col in [
-        "Hosp.<5a_Pneumonia",
-        "Hosp_Desidratacao",
-        "Hosp_Psiquiatria"
-    ]:
-        if col in df_filtrado.columns:
-            internacoes.append(col)
-
-    if len(internacoes) > 0:
-
-        fig = px.bar(
-            df_filtrado,
-            x="Ano",
-            y=internacoes,
-            barmode="group"
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-# =====================================================
-# ABA 7 - CORRELAÇÕES
-# =====================================================
-
-with tab7:
-
-    st.subheader("Correlação entre Indicadores")
-
-    df_corr = df_filtrado.select_dtypes(include="number")
-
-    if len(df_corr.columns) > 1:
-
-        corr = df_corr.corr()
-
-        fig = px.imshow(
-            corr,
-            text_auto=True,
-            aspect="auto"
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-# =====================================================
-# ABA 8 - DADOS
-# =====================================================
-
-with tab8:
-
-    st.subheader("Tabela Consolidada")
-
-    st.dataframe(
-        df_filtrado,
-        use_container_width=True
-    )
-
-    csv = df_filtrado.to_csv(
-        index=False
-    ).encode("utf-8-sig")
-
-    st.download_button(
-        "📥 Baixar CSV",
-        csv,
-        "dados_filtrados.csv",
-        "text/csv"
-    )
