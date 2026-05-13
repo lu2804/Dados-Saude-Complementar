@@ -1201,13 +1201,13 @@ with tabs[2]:
             f"{criancas:,.0f}".replace(",", ".")
         )
 
-   with k2:
+    with k2:
     # Verificamos se a coluna existe e se o dataframe não está vazio
-    if 'Perc_Vacina_Dia' in df_filtrado.columns and not df_filtrado.empty:
+        if 'Perc_Vacina_Dia' in df_filtrado.columns and not df_filtrado.empty:
         # Pegamos o valor do último ano do período selecionado
-        valor_vacinacao = df_filtrado['Perc_Vacina_Dia'].iloc[-1]
-    else:
-        valor_vacinacao = 0
+            valor_vacinacao = df_filtrado['Perc_Vacina_Dia'].iloc[-1]
+        else:
+            valor_vacinacao = 0
 
     st.metric(
         label="💉 Vacinação em Dia",
