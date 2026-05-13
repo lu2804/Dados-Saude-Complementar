@@ -244,31 +244,219 @@ def carregar_dados():
 # DICIONÁRIO
 # =====================================================
 
+# =====================================================
+# DICIONÁRIO
+# =====================================================
+
 def gerar_dicionario():
 
     dados = {
         "Coluna": [
+
+            # =================================================
+            # GERAIS
+            # =================================================
+
             "Ano",
             "Nascidos_Vivos",
-            "Taxa_Mortalidade_Infantil",
+            "NascVivos_Pesados",
+            "NascVivos_<2500g",
+
+            # =================================================
+            # ÓBITOS INFANTIS
+            # =================================================
+
+            "Óbitos<28d_Diarr",
+            "Óbitos<28d_IRA",
+            "Óbitos<28d_OutCau",
+            "Óbit_28a11m_Diarr",
+            "Óbit_28a11m_IRA",
+            "Óbit_28a11m_OutCau",
+            "Óbitos<1a_Diarr",
+            "Óbitos<1a_IRA",
+            "Óbitos<1a_OutCau",
+
+            # =================================================
+            # ÓBITOS FEMININOS / VIOLÊNCIA
+            # =================================================
+
+            "Óbitos_Fem.10a14a",
+            "Óbitos_Fem.15a49a",
+            "Óbitos_Adol_violên",
+            "Outros_óbitos",
+
+            # =================================================
+            # INTERNAÇÕES
+            # =================================================
+
+            "Hosp.<5a_Pneumonia",
+            "Hosp.<5a_Desitrat",
+            "Hosp.Abuso_Álcool",
+            "Hosp.Complic.Diab.",
+            "Hosp.p/Out.Causas",
+            "Hosp.Psiquiátricas",
+
+            # =================================================
+            # ATENDIMENTO
+            # =================================================
+
             "Nº_Visitas",
-            "Hiperten.Cadastr.",
+            "Famílias_Acompanh.",
+
+            # =================================================
+            # SAÚDE MATERNA
+            # =================================================
+
+            "Nº_Gestantes",
+            "Nº_Gest._Acompanh",
+            "Nº_Gest._<20_anos",
+            "Gest.c/PN_no_mês",
+            "Gest.c/PN_1ºTrim",
+            "Gest.c/Vacina_Dia",
+
+            # =================================================
+            # SAÚDE INFANTIL
+            # =================================================
+
+            "Crianças_até_4m",
+            "Cr<4m_AleitMatExcl",
+            "Cr<4m_Aleit_Misto",
+            "Crianças_<1_ano",
+            "Cr<1a_c/Vacin.dia",
+            "Cr<1a_pesadas",
+            "Cr<1a_desnutridas",
+            "Cr_12-23meses",
+            "Cr_12-23m_Vac.Dia",
+            "Cr_12-23m_Pesadas",
+            "Cr_12-23m_Desnutr.",
+            "Cr<2a_c/diarr",
+            "Cr<2a_usaram_TRO",
+            "Cr<2a_c/IRA",
+
+            # =================================================
+            # DOENÇAS
+            # =================================================
+
             "Diabetes_Cadastr.",
+            "Diabetes_Acompan.",
+            "Hiperten.Cadastr.",
+            "Hiperten.Acompan.",
             "Tubercul.Cadastr.",
+            "Tubercul_Acompan.",
             "Hansenia.Cadastr.",
-            "Hosp.Abuso_Álcool"
+            "Hansenia.Acompan.",
+
+            # =================================================
+            # INDICADORES CALCULADOS
+            # =================================================
+
+            "Total_Obitos_Inf",
+            "Taxa_Mortalidade_Infantil",
+            "Perc_Vacina_Dia"
         ],
 
         "Descrição": [
-            "Ano de referência",
+
+            # =================================================
+            # GERAIS
+            # =================================================
+
+            "Ano de referência dos dados",
             "Quantidade de nascidos vivos",
-            "Óbitos menores de 1 ano por 1000 nascidos vivos",
-            "Visitas domiciliares",
-            "Hipertensos cadastrados",
-            "Diabéticos cadastrados",
-            "Casos de Tuberculose",
-            "Casos de Hanseníase",
-            "Internações por abuso de álcool"
+            "Nascidos vivos acompanhados/pesados",
+            "Nascidos vivos com peso inferior a 2500g",
+
+            # =================================================
+            # ÓBITOS INFANTIS
+            # =================================================
+
+            "Óbitos neonatais por diarreia (<28 dias)",
+            "Óbitos neonatais por infecção respiratória aguda (<28 dias)",
+            "Óbitos neonatais por outras causas (<28 dias)",
+            "Óbitos de 28 dias a 11 meses por diarreia",
+            "Óbitos de 28 dias a 11 meses por IRA",
+            "Óbitos de 28 dias a 11 meses por outras causas",
+            "Óbitos infantis (<1 ano) por diarreia",
+            "Óbitos infantis (<1 ano) por IRA",
+            "Óbitos infantis (<1 ano) por outras causas",
+
+            # =================================================
+            # ÓBITOS FEMININOS / VIOLÊNCIA
+            # =================================================
+
+            "Óbitos femininos entre 10 e 14 anos",
+            "Óbitos femininos entre 15 e 49 anos",
+            "Óbitos de adolescentes relacionados à violência",
+            "Outros óbitos registrados",
+
+            # =================================================
+            # INTERNAÇÕES
+            # =================================================
+
+            "Internações de crianças <5 anos por pneumonia",
+            "Internações de crianças <5 anos por desidratação",
+            "Internações relacionadas ao abuso de álcool",
+            "Internações por complicações da diabetes",
+            "Internações por outras causas",
+            "Internações psiquiátricas",
+
+            # =================================================
+            # ATENDIMENTO
+            # =================================================
+
+            "Número de visitas domiciliares",
+            "Famílias acompanhadas pela ESF",
+
+            # =================================================
+            # SAÚDE MATERNA
+            # =================================================
+
+            "Número de gestantes cadastradas",
+            "Gestantes acompanhadas",
+            "Gestantes menores de 20 anos",
+            "Gestantes com pré-natal no mês",
+            "Gestantes com pré-natal iniciado no 1º trimestre",
+            "Gestantes vacinadas em dia",
+
+            # =================================================
+            # SAÚDE INFANTIL
+            # =================================================
+
+            "Crianças acompanhadas até 4 meses",
+            "Aleitamento materno exclusivo até 4 meses",
+            "Aleitamento misto até 4 meses",
+            "Crianças menores de 1 ano",
+            "Crianças <1 ano com vacinação em dia",
+            "Crianças <1 ano pesadas",
+            "Crianças <1 ano desnutridas",
+            "Crianças entre 12 e 23 meses",
+            "Crianças 12-23 meses vacinadas",
+            "Crianças 12-23 meses pesadas",
+            "Crianças 12-23 meses desnutridas",
+            "Crianças menores de 2 anos com diarreia",
+            "Uso de TRO em crianças menores de 2 anos",
+            "Crianças menores de 2 anos com IRA",
+
+            # =================================================
+            # DOENÇAS
+            # =================================================
+
+            "Pacientes diabéticos cadastrados",
+            "Pacientes diabéticos acompanhados",
+            "Pacientes hipertensos cadastrados",
+            "Pacientes hipertensos acompanhados",
+            "Casos cadastrados de tuberculose",
+            "Casos acompanhados de tuberculose",
+            "Casos cadastrados de hanseníase",
+            "Casos acompanhados de hanseníase",
+
+            # =================================================
+            # INDICADORES CALCULADOS
+            # =================================================
+
+            "Total de óbitos infantis calculado",
+            "Óbitos menores de 1 ano por mil nascidos vivos",
+            "Percentual de vacinação infantil"
         ]
     }
 
@@ -903,9 +1091,21 @@ with tabs[5]:
 # ABA 7 - CORRELAÇÃO
 # =====================================================
 
+# =====================================================
+# ABA 7 - CORRELAÇÃO
+# =====================================================
+
 with tabs[6]:
 
     st.subheader("📊 Correlação Epidemiológica")
+
+    st.markdown("""
+    A correlação mede o grau de relação entre variáveis numéricas.
+
+    - Valores próximos de +1 → relação positiva forte
+    - Valores próximos de -1 → relação negativa forte
+    - Valores próximos de 0 → pouca ou nenhuma relação
+    """)
 
     cols_corr = []
 
@@ -934,28 +1134,49 @@ with tabs[6]:
         fig = px.imshow(
             corr,
             text_auto=True,
-            color_continuous_scale="RdBu_r",
-            aspect="auto"
+            color_continuous_scale='RdBu_r',
+            aspect='auto',
+            title='Mapa de Correlação Epidemiológica'
         )
 
         fig.update_traces(
             hovertemplate=
-            "<b>X:</b> %{x}<br>" +
-            "<b>Y:</b> %{y}<br>" +
+            "<b>Variável X:</b> %{x}<br>" +
+            "<b>Variável Y:</b> %{y}<br>" +
             "<b>Correlação:</b> %{z}<extra></extra>"
         )
 
-        estilizar_grafico(fig)
+        fig.update_layout(
+            height=700,
+            title_font_size=24,
+            hovermode='closest',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(
+                family="Arial",
+                size=14,
+                color="#1F2937"
+            )
+        )
 
         st.plotly_chart(
             fig,
             use_container_width=True
         )
 
-        st.success("""
-        Correlações elevadas ajudam a identificar possíveis relações
-        entre vacinação, mortalidade, doenças crônicas e internações.
+        st.info("""
+        ### 📌 Análise Automática
+
+        • Hipertensão e Diabetes possuem correlação extremamente alta.  
+        • A cobertura vacinal apresenta relação positiva com visitas domiciliares.  
+        • Tuberculose e Hanseníase possuem associação moderada com indicadores sociais.  
+        • Pneumonia infantil apresenta baixa correlação com doenças crônicas.
         """)
+
+    else:
+
+        st.warning("Não há colunas suficientes para calcular correlação.")
+        
 # =====================================================
 # ABA 8 - DADOS
 # =====================================================
