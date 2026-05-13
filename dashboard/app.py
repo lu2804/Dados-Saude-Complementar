@@ -815,71 +815,429 @@ with tabs[1]:
 
 with tabs[2]:
 
-    st.subheader("👶 Saúde Infantil")
+    st.subheader("👶 Saúde Infantil e Desenvolvimento")
 
-    c1, c2 = st.columns(2)
+    st.markdown("""
+    Monitoramento epidemiológico da saúde infantil,
+    vacinação, nutrição, aleitamento materno e mortalidade.
+    """)
 
-    with c1:
+    # =================================================
+    # KPIs INFANTIS
+    # =================================================
 
-        cols_pizza = [
+    k1, k2, k3, k4 = st.columns(4)
+
+    with k1:
+
+        criancas = (
+            df_filtrado['Crianças_<1_ano'].sum()
+            if 'Crianças_<1_ano' in df_filtrado.columns
+            else 0
+        )
+
+        st.metric(
+            "Crianças <1 ano",
+            f"{criancas:,.0f}".replace(",", ".")
+        )
+
+    with k2:
+
+        vacinadas = (
+            df_filtrado['Cr<1a_c/Vacin.dia'].sum()
+            if 'Cr<1a_c/Vacin.dia' in df_filtrado.columns
+            else 0
+        )
+
+        st.metric(
+            "Vacinação em dia",
+            f"{vacinadas:,.0f}".replace(",", ".")
+        )
+
+    with k3:
+
+        desnutridas = (
+            df_filtrado['Cr<1a_desnutridas'].sum()
+            if 'Cr<1a_desnutridas' in df_filtrado.columns
+            else 0
+        )
+
+        st.metric(
+            "Desnutrição infantil",
+            f"{desnutridas:,.0f}".replace(",", "."),
+            delta_color="inverse"
+        )
+
+    with k4:
+
+        mortalidade = (
+            df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
+            if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns
+            else 0
+        )
+
+        st.metric(
+            "Mortalidade Infantil",
+            f"{mortalidade:.2f}"
+        )
+
+    st.markdown("---")
+
+    # =================================================
+    # PRIMEIRA LINHA
+    # =================================================
+
+    col1, col2 = st.columns(2)
+
+    # =================================================
+    # MORTALIDADE INFANTIL
+    # =================================================
+
+    with col1:
+
+        cols_obitos = []
+
+        for col in [
             'Óbitos<1a_Diarr',
             'Óbitos<1a_IRA',
             'Óbitos<1a_OutCau'
-        ]
+        ]:
 
-        cols_existentes = [
-            col for col in cols_pizza
-            if col in df_filtrado.columns
-        ]
+            if col in df_filtrado.columns:
+                cols_obitos.append(col)
 
-        if len(cols_existentes) > 0:
+        fig_obitos = px.bar(
+            df_filtrado,
+            x='Ano',
+            y=cols_obitos,
+            barmode='group',
+            title='Óbitos Infantis por Causa',
+            color_discrete_sequence=[
+                '#990000',
+                '#CC0000',
+                '#004A99'
+            ]
+        )
 
-            try:
+        fig_obitos.update_traces(
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Quantidade:</b> %{y}<extra></extra>"
+        )
 
-                dados = (
-                    df_filtrado[cols_existentes]
-                    .sum()
-                    .reset_index()
-                )
+        fig_obitos.update_layout(
+            hovermode='x unified',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title_font_size=22
+        )
 
-                dados.columns = ['Causa', 'Total']
+        st.plotly_chart(
+            fig_obitos,
+            use_container_width=True
+        )
 
-                fig = px.pie(
-                    dados,
-                    values='Total',
-                    names='Causa',
-                    hole=0.5,
-                    title="Óbitos Infantis"
-                )
+    # =================================================
+    # VACINAÇÃO
+    # =================================================
 
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
+    with col2:
 
-            except Exception as e:
-                st.warning(f"Erro: {e}")
+        fig_vac = go.Figure()
 
-    with c2:
+        fig_vac.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Perc_Vacina_Dia'],
+                mode='lines+markers',
+                name='Cobertura Vacinal',
+                line=dict(
+                    color='#004A99',
+                    width=4
+                ),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Cobertura:</b> %{y:.2f}%<extra></extra>"
+            )
+        )
 
-        if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns:
+        fig_vac.update_layout(
+            title='Cobertura Vacinal Infantil',
+            hovermode='x unified',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title_font_size=22
+        )
 
-            try:
+        st.plotly_chart(
+            fig_vac,
+            use_container_width=True
+        )
 
-                fig = px.area(
-                    df_filtrado,
-                    x='Ano',
-                    y='Taxa_Mortalidade_Infantil',
-                    title="Taxa de Mortalidade Infantil"
-                )
+    st.markdown("---")
 
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
+    # =================================================
+    # SEGUNDA LINHA
+    # =================================================
 
-            except Exception as e:
-                st.warning(f"Erro: {e}")
+    col3, col4 = st.columns(2)
+
+    # =================================================
+    # NUTRIÇÃO
+    # =================================================
+
+    with col3:
+
+        cols_nutricao = []
+
+        for col in [
+            'Cr<1a_desnutridas',
+            'Cr_12-23m_Desnutr.'
+        ]:
+
+            if col in df_filtrado.columns:
+                cols_nutricao.append(col)
+
+        fig_nutricao = px.bar(
+            df_filtrado,
+            x='Ano',
+            y=cols_nutricao,
+            barmode='group',
+            title='Desnutrição Infantil',
+            color_discrete_sequence=[
+                '#CC0000',
+                '#FF9900'
+            ]
+        )
+
+        fig_nutricao.update_traces(
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Casos:</b> %{y}<extra></extra>"
+        )
+
+        fig_nutricao.update_layout(
+            hovermode='x unified',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title_font_size=22
+        )
+
+        st.plotly_chart(
+            fig_nutricao,
+            use_container_width=True
+        )
+
+    # =================================================
+    # ALEITAMENTO MATERNO
+    # =================================================
+
+    with col4:
+
+        cols_aleitamento = []
+
+        for col in [
+            'Cr<4m_AleitMatExcl',
+            'Cr<4m_Aleit_Misto'
+        ]:
+
+            if col in df_filtrado.columns:
+                cols_aleitamento.append(col)
+
+        fig_aleit = px.bar(
+            df_filtrado,
+            x='Ano',
+            y=cols_aleitamento,
+            barmode='group',
+            title='Aleitamento Materno',
+            color_discrete_sequence=[
+                '#004A99',
+                '#66B2FF'
+            ]
+        )
+
+        fig_aleit.update_traces(
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Total:</b> %{y}<extra></extra>"
+        )
+
+        fig_aleit.update_layout(
+            hovermode='x unified',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title_font_size=22
+        )
+
+        st.plotly_chart(
+            fig_aleit,
+            use_container_width=True
+        )
+
+    st.markdown("---")
+
+    # =================================================
+    # TERCEIRA LINHA
+    # =================================================
+
+    col5, col6 = st.columns(2)
+
+    # =================================================
+    # DIARREIA E IRA
+    # =================================================
+
+    with col5:
+
+        cols_doencas = []
+
+        for col in [
+            'Cr<2a_c/diarr',
+            'Cr<2a_c/IRA'
+        ]:
+
+            if col in df_filtrado.columns:
+                cols_doencas.append(col)
+
+        fig_doencas = px.line(
+            df_filtrado,
+            x='Ano',
+            y=cols_doencas,
+            markers=True,
+            title='Doenças Respiratórias e Diarreicas',
+            color_discrete_sequence=[
+                '#990000',
+                '#004A99'
+            ]
+        )
+
+        fig_doencas.update_traces(
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Casos:</b> %{y}<extra></extra>"
+        )
+
+        fig_doencas.update_layout(
+            hovermode='x unified',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title_font_size=22
+        )
+
+        st.plotly_chart(
+            fig_doencas,
+            use_container_width=True
+        )
+
+    # =================================================
+    # INTERNAÇÕES INFANTIS
+    # =================================================
+
+    with col6:
+
+        cols_hosp = []
+
+        for col in [
+            'Hosp.<5a_Pneumonia',
+            'Hosp.<5a_Desitrat'
+        ]:
+
+            if col in df_filtrado.columns:
+                cols_hosp.append(col)
+
+        fig_hosp = px.bar(
+            df_filtrado,
+            x='Ano',
+            y=cols_hosp,
+            barmode='group',
+            title='Internações Infantis',
+            color_discrete_sequence=[
+                '#CC0000',
+                '#FF9900'
+            ]
+        )
+
+        fig_hosp.update_traces(
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Internações:</b> %{y}<extra></extra>"
+        )
+
+        fig_hosp.update_layout(
+            hovermode='x unified',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title_font_size=22
+        )
+
+        st.plotly_chart(
+            fig_hosp,
+            use_container_width=True
+        )
+
+    st.markdown("---")
+
+    # =================================================
+    # ANÁLISE AUTOMÁTICA
+    # =================================================
+
+    st.info("""
+    ### 📌 Análise Epidemiológica Infantil
+
+    • A mortalidade infantil apresenta forte relação com condições socioeconômicas,
+    saneamento básico e cobertura vacinal.
+
+    • Casos de diarreia e desidratação infantil são altamente associados
+    à ausência de saneamento adequado e água potável.
+
+    • A vacinação infantil reduz significativamente hospitalizações,
+    pneumonias e doenças infecciosas.
+
+    • O aleitamento materno exclusivo apresenta impacto positivo
+    na imunidade e redução da mortalidade neonatal.
+
+    • Crianças desnutridas possuem maior vulnerabilidade
+    a doenças respiratórias e infecciosas.
+    """)
+
+    # =================================================
+    # CARDS INFORMATIVOS
+    # =================================================
+
+    info1, info2, info3 = st.columns(3)
+
+    with info1:
+
+        st.warning("""
+        ### 💧 Diarreia Infantil
+
+        • Relacionada à falta de saneamento  
+        • Associada à água contaminada  
+        • Pode causar desidratação grave  
+        • Alta prevenção com higiene
+        """)
+
+    with info2:
+
+        st.error("""
+        ### 🫁 Infecção Respiratória
+
+        • Alta incidência infantil  
+        • Pode evoluir para pneumonia  
+        • Maior risco em desnutridos  
+        • Vacinação reduz complicações
+        """)
+
+    with info3:
+
+        st.success("""
+        ### 🍼 Aleitamento Materno
+
+        • Fortalece imunidade  
+        • Reduz mortalidade infantil  
+        • Protege contra infecções  
+        • Recomendado até 6 meses
+        """)
 
 # =====================================================
 # ABA 4 - SAÚDE MATERNA
