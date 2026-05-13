@@ -467,3 +467,335 @@ with tabs[0]:
         st.success(
             f"Análise epidemiológica entre {ano_inicio} e {ano_fim}."
         )
+# =====================================================
+# ABA 2 - ATENDIMENTO
+# =====================================================
+
+with tabs[1]:
+
+    st.subheader("📈 Atendimento")
+
+    colunas = []
+
+    if 'Nº_Visitas' in df_filtrado.columns:
+        colunas.append('Nº_Visitas')
+
+    if 'Famílias_Acompanh.' in df_filtrado.columns:
+        colunas.append('Famílias_Acompanh.')
+
+    if len(colunas) > 0:
+
+        try:
+
+            fig = px.line(
+                df_filtrado,
+                x='Ano',
+                y=colunas,
+                markers=True,
+                title="Evolução do Atendimento"
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+        except Exception as e:
+            st.warning(f"Erro: {e}")
+
+# =====================================================
+# ABA 3 - SAÚDE INFANTIL
+# =====================================================
+
+with tabs[2]:
+
+    st.subheader("👶 Saúde Infantil")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+
+        cols_pizza = [
+            'Óbitos<1a_Diarr',
+            'Óbitos<1a_IRA',
+            'Óbitos<1a_OutCau'
+        ]
+
+        cols_existentes = [
+            col for col in cols_pizza
+            if col in df_filtrado.columns
+        ]
+
+        if len(cols_existentes) > 0:
+
+            try:
+
+                dados = (
+                    df_filtrado[cols_existentes]
+                    .sum()
+                    .reset_index()
+                )
+
+                dados.columns = ['Causa', 'Total']
+
+                fig = px.pie(
+                    dados,
+                    values='Total',
+                    names='Causa',
+                    hole=0.5,
+                    title="Óbitos Infantis"
+                )
+
+                st.plotly_chart(
+                    fig,
+                    use_container_width=True
+                )
+
+            except Exception as e:
+                st.warning(f"Erro: {e}")
+
+    with c2:
+
+        if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns:
+
+            try:
+
+                fig = px.area(
+                    df_filtrado,
+                    x='Ano',
+                    y='Taxa_Mortalidade_Infantil',
+                    title="Taxa de Mortalidade Infantil"
+                )
+
+                st.plotly_chart(
+                    fig,
+                    use_container_width=True
+                )
+
+            except Exception as e:
+                st.warning(f"Erro: {e}")
+
+# =====================================================
+# ABA 4 - SAÚDE MATERNA
+# =====================================================
+
+with tabs[3]:
+
+    st.subheader("🤰 Saúde Materna")
+
+    cols = []
+
+    if 'Nº_Gestantes' in df_filtrado.columns:
+        cols.append('Nº_Gestantes')
+
+    if 'Gest.c/PN_1ºTrim' in df_filtrado.columns:
+        cols.append('Gest.c/PN_1ºTrim')
+
+    if len(cols) > 0:
+
+        try:
+
+            fig = px.line(
+                df_filtrado,
+                x='Ano',
+                y=cols,
+                markers=True,
+                title="Acompanhamento Pré-Natal"
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+        except Exception as e:
+            st.warning(f"Erro: {e}")
+
+# =====================================================
+# ABA 5 - DOENÇAS
+# =====================================================
+
+with tabs[4]:
+
+    st.subheader("🦠 Doenças Monitoradas")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        cols_hip = [
+            'Hiperten.Cadastr.',
+            'Hiperten.Acompan.'
+        ]
+
+        cols_existentes = [
+            col for col in cols_hip
+            if col in df_filtrado.columns
+        ]
+
+        if len(cols_existentes) > 0:
+
+            try:
+
+                fig = px.line(
+                    df_filtrado,
+                    x='Ano',
+                    y=cols_existentes,
+                    title="Hipertensão"
+                )
+
+                st.plotly_chart(
+                    fig,
+                    use_container_width=True
+                )
+
+            except Exception as e:
+                st.warning(f"Erro: {e}")
+
+    with col2:
+
+        cols_dia = [
+            'Diabetes_Cadastr.',
+            'Diabetes_Acompan.'
+        ]
+
+        cols_existentes = [
+            col for col in cols_dia
+            if col in df_filtrado.columns
+        ]
+
+        if len(cols_existentes) > 0:
+
+            try:
+
+                fig = px.line(
+                    df_filtrado,
+                    x='Ano',
+                    y=cols_existentes,
+                    title="Diabetes"
+                )
+
+                st.plotly_chart(
+                    fig,
+                    use_container_width=True
+                )
+
+            except Exception as e:
+                st.warning(f"Erro: {e}")
+
+# =====================================================
+# ABA 6 - INTERNAÇÕES
+# =====================================================
+
+with tabs[5]:
+
+    st.subheader("🏥 Internações")
+
+    cols = [
+        'Hosp.<5a_Pneumonia',
+        'Hosp.<5a_Desitrat',
+        'Hosp.Abuso_Álcool'
+    ]
+
+    cols_existentes = [
+        col for col in cols
+        if col in df_filtrado.columns
+    ]
+
+    if len(cols_existentes) > 0:
+
+        try:
+
+            fig = px.bar(
+                df_filtrado,
+                x='Ano',
+                y=cols_existentes,
+                barmode='group',
+                title="Internações"
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+        except Exception as e:
+            st.warning(f"Erro: {e}")
+
+# =====================================================
+# ABA 7 - CORRELAÇÃO
+# =====================================================
+
+with tabs[6]:
+
+    st.subheader("📊 Correlação")
+
+    cols_corr = []
+
+    for col in [
+        'Nº_Visitas',
+        'Taxa_Mortalidade_Infantil',
+        'Perc_Vacina_Dia'
+    ]:
+
+        if col in df_filtrado.columns:
+            cols_corr.append(col)
+
+    if len(cols_corr) > 1:
+
+        try:
+
+            corr = (
+                df_filtrado[cols_corr]
+                .corr()
+            )
+
+            fig = px.imshow(
+                corr,
+                text_auto=True,
+                color_continuous_scale='Blues',
+                title="Correlação entre Indicadores"
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+        except Exception as e:
+            st.warning(f"Erro: {e}")
+
+# =====================================================
+# ABA 8 - DADOS
+# =====================================================
+
+with tabs[7]:
+
+    st.subheader("📖 Dicionário de Dados")
+
+    st.dataframe(
+        df_dic,
+        use_container_width=True
+    )
+
+    st.markdown("---")
+
+    st.subheader("📂 Dados Consolidados")
+
+    st.dataframe(
+        df_filtrado,
+        use_container_width=True
+    )
+
+    csv = (
+        df_filtrado
+        .to_csv(index=False)
+        .encode('utf-8-sig')
+    )
+
+    st.download_button(
+        "📥 Baixar CSV",
+        csv,
+        "dados_filtrados.csv",
+        "text/csv"
+    )
