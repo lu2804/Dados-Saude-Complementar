@@ -1201,18 +1201,20 @@ with tabs[2]:
             f"{criancas:,.0f}".replace(",", ".")
         )
 
-    with k2:
+   with k2:
+    # Verificamos se a coluna existe e se o dataframe não está vazio
+    if 'Perc_Vacina_Dia' in df_filtrado.columns and not df_filtrado.empty:
+        # Pegamos o valor do último ano do período selecionado
+        valor_vacinacao = df_filtrado['Perc_Vacina_Dia'].iloc[-1]
+    else:
+        valor_vacinacao = 0
 
-        vacinadas = (
-            df_filtrado['Cr<1a_c/Vacin.dia'].sum()
-            if 'Cr<1a_c/Vacin.dia' in df_filtrado.columns
-            else 0
-        )
-
-        st.metric(
-            "Vacinação em dia",
-            f"{vacinadas:,.0f}".replace(",", ".")
-        )
+    st.metric(
+        label="💉 Vacinação em Dia",
+        value=f"{valor_vacinacao:.2f}%",
+        delta=f"{calcular_delta('Perc_Vacina_Dia'):.2f}%"
+    )
+        
 
     with k3:
 
@@ -1230,10 +1232,16 @@ with tabs[2]:
 
     with k4:
 
-        mortalidade = (
-            df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
-            if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns
-            else 0
+        if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns and not df_filtrado.empty:
+            valor = df_filtrado['Taxa_Mortalidade_Infantil'].iloc[-1]
+        else:
+            valor = 0
+
+        st.metric(
+            "👶 Mortalidade Infantil",
+            f"{valor:.2f}%",  # Adicionado o %
+            delta=f"{calcular_delta('Taxa_Mortalidade_Infantil'):.2f}%", # Adicionado o %
+            delta_color="inverse"
         )
 
         st.metric(
