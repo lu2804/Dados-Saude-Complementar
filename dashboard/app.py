@@ -473,12 +473,14 @@ tabs = st.tabs([
 ])
 
 # =====================================================
-# ABA 1
+# ABA 1 - VISÃO GERAL
 # =====================================================
 
 with tabs[0]:
 
-    col1, col2 = st.columns([2, 1])
+    st.markdown("## 🏥 Visão Geral Epidemiológica")
+
+    col1, col2 = st.columns([2,1])
 
     with col1:
 
@@ -490,7 +492,12 @@ with tabs[0]:
                 go.Bar(
                     x=df_filtrado['Ano'],
                     y=df_filtrado['Nascidos_Vivos'],
-                    name='Nascidos Vivos'
+                    name='Nascidos Vivos',
+                    marker_color=COR_PRIMARIA,
+                    hovertemplate=
+                    "<b>Ano:</b> %{x}<br>" +
+                    "<b>Nascidos:</b> %{y}<br>" +
+                    "<extra></extra>"
                 )
             )
 
@@ -501,12 +508,39 @@ with tabs[0]:
                     x=df_filtrado['Ano'],
                     y=df_filtrado['Total_Obitos_Inf'],
                     mode='lines+markers',
-                    name='Óbitos <1 ano'
+                    name='Óbitos <1 ano',
+                    line=dict(color=COR_SECUNDARIA, width=4),
+                    marker=dict(size=10),
+                    hovertemplate=
+                    "<b>Ano:</b> %{x}<br>" +
+                    "<b>Óbitos:</b> %{y}<br>" +
+                    "<extra></extra>"
                 )
             )
 
         fig.update_layout(
-            title="Nascimentos x Óbitos Infantis"
+
+            title="Nascimentos x Mortalidade Infantil",
+
+            hovermode="x unified",
+
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+
+            title_font=dict(size=22),
+
+            xaxis=dict(
+                showgrid=False
+            ),
+
+            yaxis=dict(
+                gridcolor="#E5E5E5"
+            ),
+
+            legend=dict(
+                orientation="h",
+                y=1.1
+            )
         )
 
         st.plotly_chart(
@@ -516,18 +550,39 @@ with tabs[0]:
 
     with col2:
 
-        st.subheader("📝 Informações")
+        st.markdown(f"""
+        <div style="
+            background-color:{COR_CARD};
+            padding:25px;
+            border-radius:18px;
+            box-shadow:0px 4px 18px rgba(0,0,0,0.08);
+            border-left:8px solid {COR_PRIMARIA};
+        ">
 
-        st.success(
-            f"Análise epidemiológica entre {ano_inicio} e {ano_fim}."
-        )
+        <h3 style="color:{COR_PRIMARIA};">
+            Indicadores Estratégicos
+        </h3>
+
+        <p>
+        A mortalidade infantil é um dos principais indicadores
+        de qualidade da saúde pública e do saneamento básico.
+        </p>
+
+        <p>
+        O monitoramento contínuo permite identificar tendências
+        epidemiológicas e apoiar decisões governamentais.
+        </p>
+
+        </div>
+        """, unsafe_allow_html=True)
+
 # =====================================================
 # ABA 2 - ATENDIMENTO
 # =====================================================
 
 with tabs[1]:
 
-    st.subheader("📈 Atendimento")
+    st.markdown("## 📈 Indicadores de Atendimento")
 
     colunas = []
 
@@ -539,23 +594,43 @@ with tabs[1]:
 
     if len(colunas) > 0:
 
-        try:
+        fig = px.line(
+            df_filtrado,
+            x='Ano',
+            y=colunas,
+            markers=True,
+            color_discrete_sequence=[
+                COR_PRIMARIA,
+                "#1565C0"
+            ]
+        )
 
-            fig = px.line(
-                df_filtrado,
-                x='Ano',
-                y=colunas,
-                markers=True,
-                title="Evolução do Atendimento"
-            )
+        fig.update_traces(
+            line=dict(width=4),
+            marker=dict(size=9),
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Valor:</b> %{y}<br>" +
+            "<extra></extra>"
+        )
 
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
+        fig.update_layout(
 
-        except Exception as e:
-            st.warning(f"Erro: {e}")
+            title="Evolução dos Atendimentos",
+
+            hovermode="x unified",
+
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+
+            xaxis=dict(showgrid=False),
+            yaxis=dict(gridcolor="#ECECEC")
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
 # =====================================================
 # ABA 3 - SAÚDE INFANTIL
@@ -563,7 +638,7 @@ with tabs[1]:
 
 with tabs[2]:
 
-    st.subheader("👶 Saúde Infantil")
+    st.markdown("## 👶 Saúde Infantil")
 
     c1, c2 = st.columns(2)
 
@@ -582,52 +657,79 @@ with tabs[2]:
 
         if len(cols_existentes) > 0:
 
-            try:
+            dados = (
+                df_filtrado[cols_existentes]
+                .sum()
+                .reset_index()
+            )
 
-                dados = (
-                    df_filtrado[cols_existentes]
-                    .sum()
-                    .reset_index()
-                )
+            dados.columns = ['Causa', 'Total']
 
-                dados.columns = ['Causa', 'Total']
+            fig = px.pie(
+                dados,
+                values='Total',
+                names='Causa',
+                hole=0.6,
+                color_discrete_sequence=[
+                    COR_PRIMARIA,
+                    "#EF5350",
+                    "#FFB300"
+                ]
+            )
 
-                fig = px.pie(
-                    dados,
-                    values='Total',
-                    names='Causa',
-                    hole=0.5,
-                    title="Óbitos Infantis"
-                )
+            fig.update_traces(
+                hovertemplate=
+                "<b>Causa:</b> %{label}<br>" +
+                "<b>Total:</b> %{value}<br>" +
+                "<b>Percentual:</b> %{percent}<br>" +
+                "<extra></extra>"
+            )
 
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
+            fig.update_layout(
+                title="Distribuição dos Óbitos Infantis",
+                paper_bgcolor="white"
+            )
 
-            except Exception as e:
-                st.warning(f"Erro: {e}")
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
 
     with c2:
 
         if 'Taxa_Mortalidade_Infantil' in df_filtrado.columns:
 
-            try:
+            fig = px.area(
+                df_filtrado,
+                x='Ano',
+                y='Taxa_Mortalidade_Infantil',
+                color_discrete_sequence=[COR_PRIMARIA]
+            )
 
-                fig = px.area(
-                    df_filtrado,
-                    x='Ano',
-                    y='Taxa_Mortalidade_Infantil',
-                    title="Taxa de Mortalidade Infantil"
-                )
+            fig.update_traces(
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Taxa:</b> %{y:.2f}<br>" +
+                "<extra></extra>"
+            )
 
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
+            fig.update_layout(
 
-            except Exception as e:
-                st.warning(f"Erro: {e}")
+                title="Taxa de Mortalidade Infantil",
+
+                hovermode="x unified",
+
+                plot_bgcolor="white",
+                paper_bgcolor="white",
+
+                xaxis=dict(showgrid=False),
+                yaxis=dict(gridcolor="#ECECEC")
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
 
 # =====================================================
 # ABA 4 - SAÚDE MATERNA
@@ -635,7 +737,7 @@ with tabs[2]:
 
 with tabs[3]:
 
-    st.subheader("🤰 Saúde Materna")
+    st.markdown("## 🤰 Saúde Materna")
 
     cols = []
 
@@ -647,173 +749,46 @@ with tabs[3]:
 
     if len(cols) > 0:
 
-        try:
+        fig = px.bar(
+            df_filtrado,
+            x='Ano',
+            y=cols,
+            barmode='group',
+            color_discrete_sequence=[
+                COR_PRIMARIA,
+                "#F06292"
+            ]
+        )
 
-            fig = px.line(
-                df_filtrado,
-                x='Ano',
-                y=cols,
-                markers=True,
-                title="Acompanhamento Pré-Natal"
-            )
+        fig.update_traces(
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Quantidade:</b> %{y}<br>" +
+            "<extra></extra>"
+        )
 
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
+        fig.update_layout(
 
-        except Exception as e:
-            st.warning(f"Erro: {e}")
+            title="Acompanhamento Pré-Natal",
 
-# =====================================================
-# ABA 5 - DOENÇAS
-# =====================================================
+            hovermode="x unified",
 
+            plot_bgcolor="white",
+            paper_bgcolor="white"
+        )
 
-# =====================================================
-# ABA 5 - DOENÇAS
-# =====================================================
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
-# =====================================================
-# ABA 5 - DOENÇAS
-# =====================================================
-
-with tabs[4]:
-
-    st.header("🦠 Monitoramento de Doenças")
-
-    doencas = [
-
-        {
-            "coluna": "Diabetes_Cadastr.",
-            "titulo": "Diabetes",
-            "cor": "#E53935",
-            "contagio": "Não contagiosa",
-            "risco": "Alto",
-            "sintomas": "Sede excessiva, fadiga, perda de peso.",
-            "causas": "Má alimentação, genética e sedentarismo.",
-            "saneamento": "Não possui relação direta com saneamento."
-        },
-
-        {
-            "coluna": "Hiperten.Cadastr.",
-            "titulo": "Hipertensão",
-            "cor": "#1E88E5",
-            "contagio": "Não contagiosa",
-            "risco": "Moderado/Alto",
-            "sintomas": "Dor de cabeça, tontura e pressão elevada.",
-            "causas": "Estresse, excesso de sal e obesidade.",
-            "saneamento": "Não possui relação direta com saneamento."
-        },
-
-        {
-            "coluna": "Tubercul.Cadastr.",
-            "titulo": "Tuberculose",
-            "cor": "#8E24AA",
-            "contagio": "Contagiosa",
-            "risco": "Alto",
-            "sintomas": "Tosse persistente, febre e emagrecimento.",
-            "causas": "Infecção bacteriana.",
-            "saneamento": "Pode ser agravada por condições precárias de saneamento e moradia."
-        },
-
-        {
-            "coluna": "Hansenia.Cadastr.",
-            "titulo": "Hanseníase",
-            "cor": "#43A047",
-            "contagio": "Baixa transmissibilidade",
-            "risco": "Moderado",
-            "sintomas": "Manchas na pele e perda de sensibilidade.",
-            "causas": "Infecção bacteriana.",
-            "saneamento": "Associada à vulnerabilidade social e saneamento precário."
-        }
-    ]
-
-    for doenca in doencas:
-
-        coluna = doenca["coluna"]
-
-        if coluna in df_filtrado.columns:
-
-            st.markdown("---")
-
-            # =====================================
-            # CARD INFORMATIVO
-            # =====================================
-
-            st.markdown(f"""
-            <div style="
-                background-color:#F8F9FA;
-                padding:20px;
-                border-radius:15px;
-                border-left:8px solid {doenca['cor']};
-                margin-bottom:20px;
-            ">
-
-            <h3 style="color:{doenca['cor']};">
-                {doenca['titulo']}
-            </h3>
-
-            <p><b>Contágio:</b> {doenca['contagio']}</p>
-
-            <p><b>Grau de risco:</b> {doenca['risco']}</p>
-
-            <p><b>Sintomas:</b> {doenca['sintomas']}</p>
-
-            <p><b>Causas:</b> {doenca['causas']}</p>
-
-            <p><b>Relação com saneamento:</b>
-            {doenca['saneamento']}</p>
-
-            </div>
-            """, unsafe_allow_html=True)
-
-            # =====================================
-            # GRÁFICO
-            # =====================================
-
-            fig = px.bar(
-                df_filtrado,
-                x='Ano',
-                y=coluna,
-                title=f"Evolução - {doenca['titulo']}",
-                color_discrete_sequence=[doenca['cor']],
-                text_auto=True,
-                hover_data={
-                    'Ano': True,
-                    coluna: True
-                }
-            )
-
-            fig.update_traces(
-
-                hovertemplate=
-                "<b>Ano:</b> %{x}<br>" +
-                "<b>Casos:</b> %{y}<br>" +
-                "<extra></extra>"
-
-            )
-
-            fig.update_layout(
-
-                xaxis_title="Ano",
-                yaxis_title="Quantidade",
-                hovermode="x unified",
-                showlegend=True
-
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
 # =====================================================
 # ABA 6 - INTERNAÇÕES
 # =====================================================
 
 with tabs[5]:
 
-    st.subheader("🏥 Internações")
+    st.markdown("## 🏥 Internações")
 
     cols = [
         'Hosp.<5a_Pneumonia',
@@ -828,23 +803,39 @@ with tabs[5]:
 
     if len(cols_existentes) > 0:
 
-        try:
+        fig = px.bar(
+            df_filtrado,
+            x='Ano',
+            y=cols_existentes,
+            barmode='group',
+            color_discrete_sequence=[
+                COR_PRIMARIA,
+                "#FB8C00",
+                "#5E35B1"
+            ]
+        )
 
-            fig = px.bar(
-                df_filtrado,
-                x='Ano',
-                y=cols_existentes,
-                barmode='group',
-                title="Internações"
-            )
+        fig.update_traces(
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Internações:</b> %{y}<br>" +
+            "<extra></extra>"
+        )
 
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
+        fig.update_layout(
 
-        except Exception as e:
-            st.warning(f"Erro: {e}")
+            title="Internações por Causa",
+
+            hovermode="x unified",
+
+            plot_bgcolor="white",
+            paper_bgcolor="white"
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
 # =====================================================
 # ABA 7 - CORRELAÇÃO
@@ -852,31 +843,15 @@ with tabs[5]:
 
 with tabs[6]:
 
-    st.subheader("📊 Correlação entre Indicadores")
-
-    st.markdown(
-        """
-        A correlação mede o grau de relação entre variáveis.
-
-        - Próximo de +1 → relação positiva forte
-        - Próximo de -1 → relação negativa forte
-        - Próximo de 0 → pouca relação
-        """
-    )
+    st.markdown("## 📊 Correlação entre Indicadores")
 
     cols_corr = []
 
     for col in [
         'Nº_Visitas',
         'Taxa_Mortalidade_Infantil',
-        'Perc_Vacina_Dia',
-        'Hiperten.Cadastr.',
-        'Diabetes_Cadastr.',
-        'Tubercul.Cadastr.',
-        'Hansenia.Cadastr.',
-        'Hosp.<5a_Pneumonia'
+        'Perc_Vacina_Dia'
     ]:
-
         if col in df_filtrado.columns:
             cols_corr.append(col)
 
@@ -885,19 +860,29 @@ with tabs[6]:
         corr = (
             df_filtrado[cols_corr]
             .corr()
-            .round(2)
         )
 
         fig = px.imshow(
             corr,
             text_auto=True,
-            color_continuous_scale='RdBu_r',
-            aspect='auto',
-            title='Mapa de Correlação'
+            color_continuous_scale=[
+                "#FFF5F5",
+                "#F28B82",
+                "#B5121B"
+            ]
+        )
+
+        fig.update_traces(
+            hovertemplate=
+            "<b>X:</b> %{x}<br>" +
+            "<b>Y:</b> %{y}<br>" +
+            "<b>Correlação:</b> %{z:.2f}<br>" +
+            "<extra></extra>"
         )
 
         fig.update_layout(
-            height=700
+            title="Mapa de Correlação",
+            paper_bgcolor="white"
         )
 
         st.plotly_chart(
