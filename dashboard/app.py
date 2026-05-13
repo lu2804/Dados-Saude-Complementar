@@ -670,115 +670,233 @@ with tabs[3]:
 # =====================================================
 
 
+# =====================================================
+# ABA 5 - DOENÇAS
+# =====================================================
+
 with tabs[4]:
 
-    st.subheader("🦠 Doenças Monitoradas")
+    st.subheader("🦠 Monitoramento Epidemiológico")
 
-    # =========================================
-    # CARDS INFORMATIVOS
-    # =========================================
+    # =================================================
+    # HIPERTENSÃO
+    # =================================================
 
-    info1, info2, info3 = st.columns(3)
+    if (
+        'Hiperten.Cadastr.' in df_filtrado.columns
+        and 'Hiperten.Acompan.' in df_filtrado.columns
+    ):
 
-    with info1:
-        st.info(
-            """
-            ### Tuberculose
-            - Contágio: via respiratória
-            - Sintomas: tosse persistente, febre, perda de peso
-            - Risco: Alto
-            - Causa: bactéria *Mycobacterium tuberculosis*
-            """
+        fig_hip = go.Figure()
+
+        fig_hip.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Hiperten.Cadastr.'],
+                mode='lines+markers',
+                name='Hipertensos Cadastrados',
+                line=dict(color='red', width=3),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Cadastrados:</b> %{y}<extra></extra>"
+            )
         )
 
-    with info2:
-        st.warning(
-            """
-            ### Hanseníase
-            - Contágio: contato prolongado
-            - Sintomas: manchas e perda de sensibilidade
-            - Risco: Médio
-            - Causa: bactéria *Mycobacterium leprae*
-            """
+        fig_hip.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Hiperten.Acompan.'],
+                mode='lines+markers',
+                name='Hipertensos Acompanhados',
+                line=dict(color='darkred', width=3),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Acompanhados:</b> %{y}<extra></extra>"
+            )
         )
 
-    with info3:
-        st.error(
-            """
-            ### Diabetes e Hipertensão
-            - Não contagiosas
-            - Associadas ao estilo de vida
-            - Risco cardiovascular elevado
-            - Necessitam acompanhamento contínuo
-            """
+        fig_hip.update_layout(
+            title="Hipertensão",
+            hovermode='x unified'
         )
 
-    st.markdown("---")
+        st.plotly_chart(fig_hip, use_container_width=True)
 
-    # =========================================
-    # GRÁFICOS
-    # =========================================
+        st.info("""
+        **Hipertensão Arterial**
+        
+        • Doença cardiovascular crônica  
+        • Pode causar AVC e infarto  
+        • Fatores: obesidade, sedentarismo, sal excessivo  
+        • Sintomas: tontura, dor de cabeça, pressão alta
+        """)
 
-    col1, col2 = st.columns(2)
+    # =================================================
+    # DIABETES
+    # =================================================
 
-    with col1:
+    if (
+        'Diabetes_Cadastr.' in df_filtrado.columns
+        and 'Diabetes_Acompan.' in df_filtrado.columns
+    ):
 
-        cols_doencas = [
-            'Hiperten.Cadastr.',
-            'Hiperten.Acompan.',
-            'Diabetes_Cadastr.',
-            'Diabetes_Acompan.'
-        ]
+        fig_dia = go.Figure()
 
-        cols_existentes = [
-            col for col in cols_doencas
-            if col in df_filtrado.columns
-        ]
-
-        if len(cols_existentes) > 0:
-
-            fig = px.line(
-                df_filtrado,
-                x='Ano',
-                y=cols_existentes,
-                markers=True,
-                title='Hipertensão e Diabetes'
+        fig_dia.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Diabetes_Cadastr.'],
+                mode='lines+markers',
+                name='Diabéticos Cadastrados',
+                line=dict(color='blue', width=3),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Cadastrados:</b> %{y}<extra></extra>"
             )
+        )
 
-            st.plotly_chart(
-                fig,
-                use_container_width=True
+        fig_dia.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Diabetes_Acompan.'],
+                mode='lines+markers',
+                name='Diabéticos Acompanhados',
+                line=dict(color='darkblue', width=3),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Acompanhados:</b> %{y}<extra></extra>"
             )
+        )
 
-    with col2:
+        fig_dia.update_layout(
+            title="Diabetes",
+            hovermode='x unified'
+        )
 
-        cols_infecciosas = [
-            'Tubercul.Cadastr.',
-            'Tubercul_Acompan.',
-            'Hansenia.Cadastr.',
-            'Hansenia.Acompan.'
-        ]
+        st.plotly_chart(fig_dia, use_container_width=True)
 
-        cols_existentes = [
-            col for col in cols_infecciosas
-            if col in df_filtrado.columns
-        ]
+        st.info("""
+        **Diabetes Mellitus**
+        
+        • Doença metabólica crônica  
+        • Relacionada à glicose elevada  
+        • Pode causar cegueira e insuficiência renal  
+        • Sintomas: sede, fome excessiva e fadiga
+        """)
 
-        if len(cols_existentes) > 0:
+    # =================================================
+    # TUBERCULOSE
+    # =================================================
 
-            fig = px.bar(
-                df_filtrado,
-                x='Ano',
-                y=cols_existentes,
-                barmode='group',
-                title='Tuberculose e Hanseníase'
+    if (
+        'Tubercul.Cadastr.' in df_filtrado.columns
+        and 'Tubercul_Acompan.' in df_filtrado.columns
+    ):
+
+        fig_tub = go.Figure()
+
+        fig_tub.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Tubercul.Cadastr.'],
+                mode='lines+markers',
+                name='Tuberculose Cadastrada',
+                line=dict(color='green', width=3),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Casos:</b> %{y}<extra></extra>"
             )
+        )
 
-            st.plotly_chart(
-                fig,
-                use_container_width=True
+        fig_tub.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Tubercul_Acompan.'],
+                mode='lines+markers',
+                name='Tuberculose Acompanhada',
+                line=dict(color='darkgreen', width=3),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Acompanhados:</b> %{y}<extra></extra>"
             )
+        )
 
+        fig_tub.update_layout(
+            title="Tuberculose",
+            hovermode='x unified'
+        )
+
+        st.plotly_chart(fig_tub, use_container_width=True)
+
+        st.warning("""
+        **Tuberculose**
+        
+        • Doença infecciosa pulmonar  
+        • Transmissão pelo ar  
+        • Alto risco sem tratamento  
+        • Sintomas: tosse persistente, febre e emagrecimento
+        """)
+
+    # =================================================
+    # HANSENÍASE
+    # =================================================
+
+    if (
+        'Hansenia.Cadastr.' in df_filtrado.columns
+        and 'Hansenia.Acompan.' in df_filtrado.columns
+    ):
+
+        fig_han = go.Figure()
+
+        fig_han.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Hansenia.Cadastr.'],
+                mode='lines+markers',
+                name='Hanseníase Cadastrada',
+                line=dict(color='orange', width=3),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Casos:</b> %{y}<extra></extra>"
+            )
+        )
+
+        fig_han.add_trace(
+            go.Scatter(
+                x=df_filtrado['Ano'],
+                y=df_filtrado['Hansenia.Acompan.'],
+                mode='lines+markers',
+                name='Hanseníase Acompanhada',
+                line=dict(color='darkorange', width=3),
+                marker=dict(size=8),
+                hovertemplate=
+                "<b>Ano:</b> %{x}<br>" +
+                "<b>Acompanhados:</b> %{y}<extra></extra>"
+            )
+        )
+
+        fig_han.update_layout(
+            title="Hanseníase",
+            hovermode='x unified'
+        )
+
+        st.plotly_chart(fig_han, use_container_width=True)
+
+        st.warning("""
+        **Hanseníase**
+        
+        • Doença infecciosa crônica  
+        • Afeta nervos e pele  
+        • Transmissão respiratória prolongada  
+        • Sintomas: manchas e perda de sensibilidade
+        """)
 # =====================================================
 # ABA 6 - INTERNAÇÕES
 # =====================================================
