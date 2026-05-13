@@ -36,54 +36,78 @@ PALETA = {
 # =====================================================
 # CSS CUSTOMIZADO
 # =====================================================
+
 st.markdown("""
 <style>
+    /* 1. Fundo Geral da Página */
+    .main {
+        background-color: #F5F7FA;
+    }
 
-.main {
-    background-color: #F5F5DC;
-}
+    /* 2. Estilização da Sidebar (Vinho) */
+    section[data-testid="stSidebar"] {
+        background-color: #A6192E;
+    }
 
-section[data-testid="stSidebar"] {
-    background-color: #A6192E;
-}
+    section[data-testid="stSidebar"] * {
+        color: white !important;
+    }
 
-section[data-testid="stSidebar"] * {
-    color: white !important;
-}
+    /* 3. Cards de Métricas (KPIs) */
+    [data-testid="stMetric"] {
+        background-color: white;
+        padding: 15px;
+        border-radius: 15px;
+        border-left: 6px solid #A6192E;
+        box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+    }
 
-[data-testid="stMetric"] {
-    background-color: white;
-    padding: 15px;
-    border-radius: 15px;
-    border-left: 6px solid #A6192E;
-    box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
-}
+    [data-testid="stMetricValue"] {
+        font-size: 30px;
+        color: #A6192E;
+        font-weight: bold;
+    }
 
-[data-testid="stMetricValue"] {
-    font-size: 30px;
-    color: #A6192E;
-    font-weight: bold;
-}
+    /* 4. Estilização das Abas */
+    /* Abas NÃO selecionadas (Tom Creme/Bege) */
+    .stTabs [data-baseweb="tab"] {
+        background-color: #FDF5E6 !important; /* Cor Creme/OldLace */
+        border-radius: 10px 10px 0px 0px;
+        padding: 12px 20px;
+        margin-right: 4px;
+        border: 1px solid #F5DEB3; /* Borda sutil em tom trigo */
+        transition: all 0.3s ease;
+    }
 
-.stTabs [data-baseweb="tab"] {
-    background-color: white;
-    border-radius: 10px 10px 0px 0px;
-    padding: 12px 20px;
-    margin-right: 4px;
-}
+    /* Texto das abas NÃO selecionadas (Preto para contraste) */
+    .stTabs [data-baseweb="tab"] p {
+        color: #333333 !important;
+        font-weight: 500;
+    }
 
-.stTabs [aria-selected="true"] {
-    background-color: #A6192E !important;
-    color: white !important;
-}
+    /* Aba SELECIONADA (Vinho com texto Branco) */
+    .stTabs [aria-selected="true"] {
+        background-color: #A6192E !important;
+        border: 1px solid #A6192E !important;
+    }
 
-h1, h2, h3 {
-    color: #A6192E;
-}
+    .stTabs [aria-selected="true"] p {
+        color: white !important;
+        font-weight: bold;
+    }
+
+    /* 5. Títulos e Subtítulos */
+    h1, h2, h3 {
+        color: #A6192E;
+    }
+    
+    /* 6. Ajuste de Hover (Passar o mouse) nas abas */
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #F5DEB3 !important; /* Escurece o bege levemente no hover */
+    }
 
 </style>
-""", unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 # =====================================================
 # NOMES LEGÍVEIS DOS GRÁFICOS
