@@ -75,7 +75,7 @@ st.markdown("""
         border-radius: 10px 10px 0px 0px;
         padding: 12px 20px;
         margin-right: 4px;
-        border: 1px solid #f0ede9; /* Borda sutil em tom trigo */
+        border: 1px solid #e3e3e3; /* Borda sutil em tom trigo */
         transition: all 0.3s ease;
     }
 
