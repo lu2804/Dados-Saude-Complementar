@@ -887,144 +887,241 @@ with tabs[2]:
 
 with tabs[3]:
 
-    st.subheader("🤰 Saúde Materna")
+    st.subheader("🤰 Saúde Materna e Gestacional")
 
-    cols = []
+    st.markdown("""
+    Esta análise apresenta a evolução do acompanhamento pré-natal,
+    gestação na adolescência e possíveis relações com doenças crônicas.
+    """)
 
-    if 'Nº_Gestantes' in df_filtrado.columns:
-        cols.append('Nº_Gestantes')
+    # =================================================
+    # CARDS
+    # =================================================
 
-    if 'Gest.c/PN_1ºTrim' in df_filtrado.columns:
-        cols.append('Gest.c/PN_1ºTrim')
+    c1, c2, c3, c4 = st.columns(4)
 
-    if len(cols) > 0:
+    with c1:
 
-        try:
+        total_gest = (
+            df_filtrado['Nº_Gestantes'].sum()
+            if 'Nº_Gestantes' in df_filtrado.columns
+            else 0
+        )
 
-            fig = px.line(
-                df_filtrado,
-                x='Ano',
-                y=cols,
-                markers=True,
-                title="Acompanhamento Pré-Natal"
+        st.metric(
+            "Gestantes",
+            f"{total_gest:,.0f}".replace(",", ".")
+        )
+
+    with c2:
+
+        gest_adol = (
+            df_filtrado['Nº_Gest._<20_anos'].sum()
+            if 'Nº_Gest._<20_anos' in df_filtrado.columns
+            else 0
+        )
+
+        st.metric(
+            "Gestantes <20 anos",
+            f"{gest_adol:,.0f}".replace(",", ".")
+        )
+
+    with c3:
+
+        pre_natal = (
+            df_filtrado['Gest.c/PN_1ºTrim'].sum()
+            if 'Gest.c/PN_1ºTrim' in df_filtrado.columns
+            else 0
+        )
+
+        st.metric(
+            "Pré-natal 1º trimestre",
+            f"{pre_natal:,.0f}".replace(",", ".")
+        )
+
+    with c4:
+
+        vacina = (
+            df_filtrado['Gest.c/Vacina_Dia'].sum()
+            if 'Gest.c/Vacina_Dia' in df_filtrado.columns
+            else 0
+        )
+
+        st.metric(
+            "Gestantes vacinadas",
+            f"{vacina:,.0f}".replace(",", ".")
+        )
+
+    st.markdown("---")
+
+    # =================================================
+    # GRÁFICOS
+    # =================================================
+
+    col1, col2 = st.columns(2)
+
+    # =================================================
+    # EVOLUÇÃO GESTACIONAL
+    # =================================================
+
+    with col1:
+
+        cols_materna = []
+
+        for col in [
+            'Nº_Gestantes',
+            'Nº_Gest._<20_anos',
+            'Gest.c/PN_1ºTrim'
+        ]:
+
+            if col in df_filtrado.columns:
+                cols_materna.append(col)
+
+        fig_materna = px.bar(
+            df_filtrado,
+            x='Ano',
+            y=cols_materna,
+            barmode='group',
+            title='Evolução da Saúde Materna',
+            color_discrete_sequence=[
+                '#990000',
+                '#CC0000',
+                '#004A99'
+            ]
+        )
+
+        fig_materna.update_traces(
+            hovertemplate=
+            "<b>Ano:</b> %{x}<br>" +
+            "<b>Quantidade:</b> %{y}<extra></extra>"
+        )
+
+        fig_materna.update_layout(
+            hovermode='x unified',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(size=14),
+            title_font_size=22
+        )
+
+        st.plotly_chart(
+            fig_materna,
+            use_container_width=True
+        )
+
+    # =================================================
+    # CORRELAÇÃO GESTAÇÃO X DOENÇAS
+    # =================================================
+
+    with col2:
+
+        rel_cols = []
+
+        for col in [
+            'Nº_Gest._<20_anos',
+            'Diabetes_Cadastr.',
+            'Hiperten.Cadastr.',
+            'Taxa_Mortalidade_Infantil'
+        ]:
+
+            if col in df_filtrado.columns:
+                rel_cols.append(col)
+
+        if len(rel_cols) >= 2:
+
+            corr_materna = (
+                df_filtrado[rel_cols]
+                .corr(numeric_only=True)
+                .round(2)
+            )
+
+            fig_corr = px.imshow(
+                corr_materna,
+                text_auto=True,
+                color_continuous_scale='RdBu_r',
+                title='Gestação x Doenças'
+            )
+
+            fig_corr.update_traces(
+                hovertemplate=
+                "<b>X:</b> %{x}<br>" +
+                "<b>Y:</b> %{y}<br>" +
+                "<b>Correlação:</b> %{z}<extra></extra>"
+            )
+
+            fig_corr.update_layout(
+                height=500,
+                plot_bgcolor='white',
+                paper_bgcolor='white',
+                title_font_size=22
             )
 
             st.plotly_chart(
-                fig,
+                fig_corr,
                 use_container_width=True
             )
 
-        except Exception as e:
-            st.warning(f"Erro: {e}")
+    st.markdown("---")
 
-with tabs[4]:
+    # =================================================
+    # ANÁLISE AUTOMÁTICA
+    # =================================================
 
-    st.subheader("🦠 Monitoramento Epidemiológico")
+    st.info("""
+    ### 📌 Análise da Saúde Materna
 
-    doencas = [
-        {
-            "titulo": "Hipertensão",
-            "cad": "Hiperten.Cadastr.",
-            "acom": "Hiperten.Acompan.",
-            "cor": PALETA["vermelho"],
-            "texto": """
-            Doença cardiovascular crônica.
+    • O acompanhamento pré-natal apresentou crescimento ao longo dos anos.  
 
-            • Não relacionada diretamente ao saneamento
-            • Fatores: obesidade, sedentarismo e alimentação
-            • Pode causar AVC e infarto
-            """
-        },
+    • Gestação na adolescência continua sendo um fator importante de risco social e obstétrico.  
 
-        {
-            "titulo": "Diabetes",
-            "cad": "Diabetes_Cadastr.",
-            "acom": "Diabetes_Acompan.",
-            "cor": PALETA["azul"],
-            "texto": """
-            Doença metabólica crônica.
+    • Hipertensão e diabetes possuem impacto significativo na gravidez,
+    aumentando o risco de parto prematuro e complicações neonatais.  
 
-            • Não relacionada ao saneamento
-            • Associada à glicose elevada
-            • Pode causar cegueira e insuficiência renal
-            """
-        },
+    • A vacinação gestacional e o pré-natal precoce ajudam na redução
+    da mortalidade infantil e complicações maternas.  
 
-        {
-            "titulo": "Tuberculose",
-            "cad": "Tubercul.Cadastr.",
-            "acom": "Tubercul_Acompan.",
-            "cor": PALETA["verde"],
-            "texto": """
-            Doença infecciosa pulmonar.
+    • Regiões com menor acesso ao saneamento e atenção básica
+    tendem a apresentar piores indicadores materno-infantis.
+    """)
 
-            • Relacionada à vulnerabilidade social
-            • Associada a ambientes precários
-            • Transmissão aérea
-            """
-        },
+    # =================================================
+    # QUADRO DE RISCO
+    # =================================================
 
-        {
-            "titulo": "Hanseníase",
-            "cad": "Hansenia.Cadastr.",
-            "acom": "Hansenia.Acompan.",
-            "cor": PALETA["laranja"],
-            "texto": """
-            Doença infecciosa crônica.
+    risco1, risco2, risco3 = st.columns(3)
 
-            • Relacionada parcialmente ao saneamento
-            • Associada à pobreza
-            • Afeta pele e nervos
-            """
-        }
-    ]
+    with risco1:
 
-    for d in doencas:
+        st.warning("""
+        ### ⚠️ Gravidez na Adolescência
 
-        if (
-            d["cad"] in df_filtrado.columns
-            and d["acom"] in df_filtrado.columns
-        ):
+        • Maior risco obstétrico  
+        • Maior evasão escolar  
+        • Relação com vulnerabilidade social  
+        • Necessidade de pré-natal intensivo
+        """)
 
-            fig = go.Figure()
+    with risco2:
 
-            fig.add_trace(
-                go.Bar(
-                    x=df_filtrado['Ano'],
-                    y=df_filtrado[d["cad"]],
-                    name="Cadastrados",
-                    marker_color=d["cor"],
-                    hovertemplate=
-                    "<b>Ano:</b> %{x}<br>" +
-                    "<b>Total:</b> %{y}<extra></extra>"
-                )
-            )
+        st.error("""
+        ### ❤️ Hipertensão na Gravidez
 
-            fig.add_trace(
-                go.Bar(
-                    x=df_filtrado['Ano'],
-                    y=df_filtrado[d["acom"]],
-                    name="Acompanhados",
-                    marker_color=COR_SECUNDARIA,
-                    hovertemplate=
-                    "<b>Ano:</b> %{x}<br>" +
-                    "<b>Total:</b> %{y}<extra></extra>"
-                )
-            )
+        • Pode causar pré-eclâmpsia  
+        • Risco de parto prematuro  
+        • Relacionada à mortalidade materna  
+        • Exige acompanhamento contínuo
+        """)
 
-            fig.update_layout(
-                barmode="group",
-                title=d["titulo"]
-            )
+    with risco3:
 
-            estilizar_grafico(fig)
+        st.info("""
+        ### 🩺 Diabetes Gestacional
 
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-            st.info(d["texto"])
+        • Pode aumentar peso fetal  
+        • Risco de parto complicado  
+        • Relacionada à obesidade  
+        • Controle alimentar é essencial
+        """)
 # =====================================================
 # ABA 6 - INTERNAÇÕES
 # =====================================================
@@ -1087,9 +1184,6 @@ with tabs[5]:
                 Internações relacionadas ao álcool possuem impacto
                 social e psiquiátrico elevado.
                 """)
-# =====================================================
-# ABA 7 - CORRELAÇÃO
-# =====================================================
 
 # =====================================================
 # ABA 7 - CORRELAÇÃO
@@ -1176,7 +1270,7 @@ with tabs[6]:
     else:
 
         st.warning("Não há colunas suficientes para calcular correlação.")
-        
+
 # =====================================================
 # ABA 8 - DADOS
 # =====================================================
